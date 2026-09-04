@@ -46,3 +46,5 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
 
 export const authenticateJwt = authenticate;
 export type AuthRequest = Request & { user?: AuthUser };
+export type AuthenticatedRequest = AuthRequest;
+

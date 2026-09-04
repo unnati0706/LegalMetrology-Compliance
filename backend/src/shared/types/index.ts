@@ -391,3 +391,200 @@ export interface InspectNextItem {
   deletedAt?: Date | null;
 }
 
+// B36 Legal Notice Types
+export type LegalNoticeType = 
+  | 'SHOW_CAUSE' 
+  | 'SEIZURE_NOTICE' 
+  | 'COMPOUNDING_OFFER' 
+  | 'RECTIFICATION_NOTICE';
+
+export type LegalNoticeStatus = 
+  | 'DRAFT' 
+  | 'ISSUED' 
+  | 'SERVED' 
+  | 'RESPONDED' 
+  | 'EXPIRED' 
+  | 'WITHDRAWN';
+
+export interface LegalNotice {
+  id: string;
+  noticeNumber: string; // e.g., "LM/NZ/2026/SC-0042"
+  noticeType: LegalNoticeType;
+  inspectionId: string;
+  manufacturerId: string;
+  manufacturerName: string;
+  issuingAuthority: string;
+  statutoryReference: string; // e.g., "Section 39 of Legal Metrology Act, 2009 read with Rule 6"
+  allegations: Array<{
+    ruleCode: string;
+    description: string;
+    severity: ViolationSeverity;
+  }>;
+  responseDeadline: Date; // 15 or 30 days statutory window
+  status: LegalNoticeStatus;
+  issuedAt?: Date;
+  servedAt?: Date;
+  servedToEmail?: string;
+  digitalSignatureHash?: string;
+  notes?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B37 Manufacturer Appeals & Rectification Types
+export type AppealStatus = 
+  | 'SUBMITTED' 
+  | 'UNDER_REVIEW' 
+  | 'ACCEPTED' 
+  | 'REJECTED' 
+  | 'ADDITIONAL_INFO_REQUESTED' 
+  | 'MITIGATED';
+
+export type AppealDecision = 
+  | 'ACCEPT' 
+  | 'REJECT' 
+  | 'REQUEST_MORE_INFO' 
+  | 'MITIGATE';
+
+export interface RectificationEvidence {
+  evidenceType: 'REVISED_ARTWORK' | 'CORRECTION_STICKER_PROOF' | 'BATCH_RECALL_NOTICE' | 'LAB_REPORT';
+  documentUrl: string;
+  description: string;
+  uploadedAt: Date;
+}
+
+export interface ManufacturerAppeal {
+  id: string;
+  appealNumber: string; // e.g. "LM/APL/2026/0019"
+  noticeId: string;
+  manufacturerId: string;
+  appellantName: string;
+  groundsForAppeal: string;
+  correctiveActionPlan: string;
+  rectificationEvidence: RectificationEvidence[];
+  status: AppealStatus;
+  reviewedBy?: string;
+  reviewedAt?: Date;
+  decision?: AppealDecision;
+  decisionNotes?: string;
+  penaltyMitigationPercent?: number; // 0 to 100
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B38 Compounding & Penalty Assessment Types
+export type OffenseType = 'FIRST_OFFENSE' | 'SECOND_OFFENSE' | 'SUBSEQUENT_OFFENSE';
+
+export type PenaltyStatus = 
+  | 'ASSESSED' 
+  | 'PAID' 
+  | 'WAIVED' 
+  | 'ESCALATED_TO_COURT' 
+  | 'DISPUTED';
+
+export interface PenaltyBreakdownItem {
+  section: string; // e.g. "Section 36(1) - Non-standard package"
+  baseAmount: number;
+  offenseMultiplier: number; // 1.0 for first, 2.0+ for repeat
+  finalAmount: number;
+  description: string;
+}
+
+export interface PenaltyAssessment {
+  id: string;
+  assessmentNumber: string; // e.g. "LM/FIN/2026/PA-0881"
+  inspectionId: string;
+  noticeId?: string;
+  manufacturerId: string;
+  manufacturerName: string;
+  offenseType: OffenseType;
+  totalAmount: number;
+  compoundingApplicable: boolean;
+  compoundingFee: number;
+  breakdown: PenaltyBreakdownItem[];
+  status: PenaltyStatus;
+  paymentReference?: string;
+  paidAt?: Date;
+  receiptNumber?: string;
+  courtCaseReference?: string;
+  assessedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B39 Pre-Market Self-Certification Types
+export type CertificationStatus = 
+  | 'DRAFT' 
+  | 'VERIFIED_COMPLIANT' 
+  | 'NON_COMPLIANT_FLAGGED' 
+  | 'EXPIRED' 
+  | 'REVOKED';
+
+export interface SelfCertification {
+  id: string;
+  certificateNumber: string; // e.g. "LM/SMC/2026/CERT-104"
+  manufacturerId: string;
+  manufacturerName: string;
+  productName: string;
+  category: string;
+  sku: string;
+  artworkImageUrl: string;
+  declarationsDeclared: Record<string, string>;
+  complianceScore: number; // 0 to 100
+  passedChecks: string[];
+  flaggedDefects: string[];
+  status: CertificationStatus;
+  validFrom: Date;
+  validUntil: Date;
+  digitalSealHash: string;
+  certifiedBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B40 Multi-Agency Case Dossier & Interoperability Types
+export type TargetAgency = 
+  | 'FSSAI' 
+  | 'CCPA' 
+  | 'NCH_GRIEVANCE' 
+  | 'DISTRICT_COURT' 
+  | 'STATE_CONTROLLER';
+
+export type DossierStatus = 
+  | 'GENERATED' 
+  | 'TRANSMITTED' 
+  | 'ACKNOWLEDGED' 
+  | 'ADMITTED_IN_COURT' 
+  | 'ARCHIVED';
+
+export interface CaseDossier {
+  id: string;
+  dossierNumber: string; // e.g. "LM/DOS/2026/FSSAI-0012"
+  inspectionId: string;
+  targetAgency: TargetAgency;
+  caseTitle: string;
+  manufacturerId: string;
+  manufacturerName: string;
+  statutoryOffenses: string[];
+  summaryOfEvidence: {
+    totalViolations: number;
+    criticalViolations: number;
+    evidenceCount: number;
+    noticeIds: string[];
+    penaltyId?: string;
+  };
+  payloadChecksum: string; // SHA-256 integrity hash of entire bundle
+  status: DossierStatus;
+  transmissionTimestamp?: Date;
+  externalAcknowledgmentRef?: string;
+  compiledBy: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+

@@ -13,7 +13,12 @@ import {
   ViolationPattern,
   GeographicZoneMetric,
   RiskProfile,
-  InspectNextItem
+  InspectNextItem,
+  LegalNotice,
+  ManufacturerAppeal,
+  PenaltyAssessment,
+  SelfCertification,
+  CaseDossier
 } from '../types/index.js';
 
 export interface InMemoryDb {
@@ -30,6 +35,11 @@ export interface InMemoryDb {
   geoZones: Map<string, GeographicZoneMetric>;
   riskProfiles: Map<string, RiskProfile>;
   inspectNextQueue: Map<string, InspectNextItem>;
+  legalNotices: Map<string, LegalNotice>;
+  appeals: Map<string, ManufacturerAppeal>;
+  penalties: Map<string, PenaltyAssessment>;
+  selfCertifications: Map<string, SelfCertification>;
+  caseDossiers: Map<string, CaseDossier>;
   auditLogs: AuditLog[];
   idempotencyKeys: Map<string, { response: any; timestamp: number }>;
 }
@@ -49,6 +59,11 @@ class DatabaseManager {
     geoZones: new Map(),
     riskProfiles: new Map(),
     inspectNextQueue: new Map(),
+    legalNotices: new Map(),
+    appeals: new Map(),
+    penalties: new Map(),
+    selfCertifications: new Map(),
+    caseDossiers: new Map(),
     auditLogs: [],
     idempotencyKeys: new Map(),
   };
@@ -77,6 +92,11 @@ class DatabaseManager {
     this.inMemory.geoZones.clear();
     this.inMemory.riskProfiles.clear();
     this.inMemory.inspectNextQueue.clear();
+    this.inMemory.legalNotices.clear();
+    this.inMemory.appeals.clear();
+    this.inMemory.penalties.clear();
+    this.inMemory.selfCertifications.clear();
+    this.inMemory.caseDossiers.clear();
     this.inMemory.auditLogs = [];
     this.inMemory.idempotencyKeys.clear();
     this.seedRules();
@@ -535,6 +555,174 @@ class DatabaseManager {
 
     for (const q of sampleQueue) {
       this.inMemory.inspectNextQueue.set(q.id, q);
+    }
+
+    // Seed Sample Legal Notices (B36)
+    const sampleNotices: LegalNotice[] = [
+      {
+        id: 'notice-001',
+        noticeNumber: 'LM/NZ/2026/SC-0042',
+        noticeType: 'SHOW_CAUSE',
+        inspectionId: 'insp-sample-01',
+        manufacturerId: 'mfg-priya-foods',
+        manufacturerName: 'Priya Foods Ltd',
+        issuingAuthority: 'Deputy Controller, Legal Metrology (HQ), New Delhi',
+        statutoryReference: 'Section 39 of Legal Metrology Act, 2009 read with Rule 6(1)(e) PCR 2011',
+        allegations: [
+          {
+            ruleCode: 'PCR-2011-R06-MRP-USP',
+            description: 'Absence of mandatory Unit Sale Price declaration on package > 1kg',
+            severity: 'CRITICAL',
+          }
+        ],
+        responseDeadline: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // +15 days
+        status: 'ISSUED',
+        issuedAt: new Date(),
+        servedToEmail: 'compliance@priyafoods.in',
+        digitalSignatureHash: 'a7b3c2d1e0f98234710293847561029384756102938475610293847561029384',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const n of sampleNotices) {
+      this.inMemory.legalNotices.set(n.id, n);
+    }
+
+    // Seed Sample Appeals (B37)
+    const sampleAppeals: ManufacturerAppeal[] = [
+      {
+        id: 'appeal-001',
+        appealNumber: 'LM/APL/2026/0019',
+        noticeId: 'notice-001',
+        manufacturerId: 'mfg-priya-foods',
+        appellantName: 'Priya Foods Legal & Compliance Team',
+        groundsForAppeal: 'Pre-printed legacy packaging transition buffer request under Rule 33.',
+        correctiveActionPlan: 'Overstickering of Unit Sale Price on existing retail inventory and revised cylinder engraving for new batches.',
+        rectificationEvidence: [
+          {
+            evidenceType: 'REVISED_ARTWORK',
+            documentUrl: 'https://storage.legalmetrology.gov.in/rectifications/priya_revised_artwork.pdf',
+            description: 'Updated packaging layout showing prominent USP at Rs 0.45/g',
+            uploadedAt: new Date(),
+          }
+        ],
+        status: 'SUBMITTED',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const a of sampleAppeals) {
+      this.inMemory.appeals.set(a.id, a);
+    }
+
+    // Seed Sample Penalties (B38)
+    const samplePenalties: PenaltyAssessment[] = [
+      {
+        id: 'pen-001',
+        assessmentNumber: 'LM/FIN/2026/PA-0881',
+        inspectionId: 'insp-sample-01',
+        noticeId: 'notice-001',
+        manufacturerId: 'mfg-priya-foods',
+        manufacturerName: 'Priya Foods Ltd',
+        offenseType: 'FIRST_OFFENSE',
+        totalAmount: 25000,
+        compoundingApplicable: true,
+        compoundingFee: 25000,
+        breakdown: [
+          {
+            section: 'Section 36(1) - Non-standard package declarations',
+            baseAmount: 25000,
+            offenseMultiplier: 1.0,
+            finalAmount: 25000,
+            description: 'First offense under Legal Metrology Act for packaged commodity violation',
+          }
+        ],
+        status: 'ASSESSED',
+        assessedBy: 'usr-supervisor-01',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const p of samplePenalties) {
+      this.inMemory.penalties.set(p.id, p);
+    }
+
+    // Seed Sample Pre-Market Self-Certifications (B39)
+    const sampleCertifications: SelfCertification[] = [
+      {
+        id: 'cert-001',
+        certificateNumber: 'LM/SMC/2026/CERT-104',
+        manufacturerId: 'mfg-priya-foods',
+        manufacturerName: 'Priya Foods Ltd',
+        productName: 'Priya Premium Basmati Rice 5kg',
+        category: 'Food & Grains',
+        sku: 'PF-BR-5KG-01',
+        artworkImageUrl: 'https://storage.legalmetrology.gov.in/artworks/basmati_5kg.png',
+        declarationsDeclared: {
+          mrp: 'Rs 450.00',
+          netQuantity: '5 kg',
+          unitSalePrice: 'Rs 90.00 / kg',
+          manufacturer: 'Priya Foods Ltd, Pune, PIN: 411028',
+          consumerCare: 'care@priyafoods.in, 1800-123-4567',
+          dateOfMfg: '08/2026'
+        },
+        complianceScore: 100.0,
+        passedChecks: [
+          'PCR-2011-R06-MRP-USP',
+          'PCR-2011-R06-NET-QTY',
+          'PCR-2011-R06-MFG-NAME',
+          'PCR-2011-R06-DATE-FORMAT',
+          'PCR-2011-R07-FONT-HEIGHT'
+        ],
+        flaggedDefects: [],
+        status: 'VERIFIED_COMPLIANT',
+        validFrom: new Date(),
+        validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // +1 year
+        digitalSealHash: '9e8d7c6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d',
+        certifiedBy: 'usr-manufacturer-01',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const sc of sampleCertifications) {
+      this.inMemory.selfCertifications.set(sc.id, sc);
+    }
+
+    // Seed Sample Multi-Agency Case Dossiers (B40)
+    const sampleDossiers: CaseDossier[] = [
+      {
+        id: 'dossier-001',
+        dossierNumber: 'LM/DOS/2026/FSSAI-0012',
+        inspectionId: 'insp-sample-01',
+        targetAgency: 'FSSAI',
+        caseTitle: 'Misbranded Food Packaging & Omission of Mandatory Declarations',
+        manufacturerId: 'mfg-priya-foods',
+        manufacturerName: 'Priya Foods Ltd',
+        statutoryOffenses: [
+          'Legal Metrology Act 2009 Section 39',
+          'FSS (Packaging and Labelling) Regulations'
+        ],
+        summaryOfEvidence: {
+          totalViolations: 1,
+          criticalViolations: 1,
+          evidenceCount: 2,
+          noticeIds: ['notice-001'],
+          penaltyId: 'pen-001'
+        },
+        payloadChecksum: '3b89ef127cd94204859a22839401928374650192837465019283746501928374',
+        status: 'GENERATED',
+        compiledBy: 'usr-admin-01',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const cd of sampleDossiers) {
+      this.inMemory.caseDossiers.set(cd.id, cd);
     }
   }
 }
