@@ -1,0 +1,13 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const b10_controller_1 = require("./b10.controller");
+const b04_service_1 = require("../b04/b04.service");
+const b05_guard_1 = require("../b05/b05.guard");
+const router = (0, express_1.Router)();
+router.use(b04_service_1.authenticateToken);
+router.get('/', (0, b05_guard_1.requireRole)(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), b10_controller_1.getEvidenceList);
+router.post('/', (0, b05_guard_1.requireRole)(['Administrator', 'Inspector', 'Supervisor']), b10_controller_1.uploadEvidence);
+router.get('/:id', (0, b05_guard_1.requireRole)(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), b10_controller_1.getEvidenceById);
+router.patch('/:id', (0, b05_guard_1.requireRole)(['Administrator', 'Inspector', 'Supervisor']), b10_controller_1.updateEvidence);
+exports.default = router;

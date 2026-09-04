@@ -1,0 +1,77 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const b03_middleware_1 = require("./modules/b03/b03.middleware");
+const idempotency_1 = require("./shared/idempotency");
+const errors_1 = require("./shared/errors");
+const audit_1 = require("./shared/audit");
+const b01_routes_1 = __importDefault(require("./modules/b01/b01.routes"));
+const b02_routes_1 = __importDefault(require("./modules/b02/b02.routes"));
+const b03_routes_1 = __importDefault(require("./modules/b03/b03.routes"));
+const b04_routes_1 = __importDefault(require("./modules/b04/b04.routes"));
+const b05_routes_1 = __importDefault(require("./modules/b05/b05.routes"));
+const b06_routes_1 = __importDefault(require("./modules/b06/b06.routes"));
+const b07_routes_1 = __importDefault(require("./modules/b07/b07.routes"));
+const b08_routes_1 = __importDefault(require("./modules/b08/b08.routes"));
+const b09_routes_1 = __importDefault(require("./modules/b09/b09.routes"));
+const b10_routes_1 = __importDefault(require("./modules/b10/b10.routes"));
+const b11_routes_1 = __importDefault(require("./modules/b11/b11.routes"));
+const b12_routes_1 = __importDefault(require("./modules/b12/b12.routes"));
+const b13_routes_1 = __importDefault(require("./modules/b13/b13.routes"));
+const b14_routes_1 = __importDefault(require("./modules/b14/b14.routes"));
+const b15_routes_1 = __importDefault(require("./modules/b15/b15.routes"));
+const b16_routes_1 = __importDefault(require("./modules/b16/b16.routes"));
+const b17_routes_1 = __importDefault(require("./modules/b17/b17.routes"));
+const b18_routes_1 = __importDefault(require("./modules/b18/b18.routes"));
+const b19_routes_1 = __importDefault(require("./modules/b19/b19.routes"));
+const b20_routes_1 = __importDefault(require("./modules/b20/b20.routes"));
+const app = (0, express_1.default)();
+// Global Middlewares
+app.use(b03_middleware_1.helmetMiddleware);
+app.use(b03_middleware_1.corsMiddleware);
+app.use(express_1.default.json({ limit: '10mb' }));
+app.use(express_1.default.urlencoded({ extended: true }));
+app.use(b03_middleware_1.rateLimiterMiddleware);
+app.use(idempotency_1.idempotencyMiddleware);
+// Health Check Endpoint
+app.get('/health', (_req, res) => {
+    res.json({
+        status: 'UP',
+        service: 'Legal Metrology Compliance Backend (SIH26034)',
+        timestamp: new Date().toISOString(),
+    });
+});
+// Module API Routes
+app.use('/api/v1/b01', b01_routes_1.default);
+app.use('/api/v1/b02', b02_routes_1.default);
+app.use('/api/v1/b03', b03_routes_1.default);
+app.use('/api/v1/b04', b04_routes_1.default);
+app.use('/api/v1/b05', b05_routes_1.default);
+app.use('/api/v1/b06', b06_routes_1.default);
+app.use('/api/v1/b07', b07_routes_1.default);
+app.use('/api/v1/b08', b08_routes_1.default);
+app.use('/api/v1/b09', b09_routes_1.default);
+app.use('/api/v1/b10', b10_routes_1.default);
+app.use('/api/v1/b11', b11_routes_1.default);
+app.use('/api/v1/b12', b12_routes_1.default);
+app.use('/api/v1/b13', b13_routes_1.default);
+app.use('/api/v1/b14', b14_routes_1.default);
+app.use('/api/v1/b15', b15_routes_1.default);
+app.use('/api/v1/b16', b16_routes_1.default);
+app.use('/api/v1/b17', b17_routes_1.default);
+app.use('/api/v1/b18', b18_routes_1.default);
+app.use('/api/v1/b19', b19_routes_1.default);
+app.use('/api/v1/b20', b20_routes_1.default);
+// Audit Logs Endpoint (Admin/Supervisor)
+app.get('/api/v1/audit-logs', (req, res) => {
+    const entityType = req.query.entityType;
+    const entityId = req.query.entityId;
+    const logs = (0, audit_1.getAuditLogs)(entityType, entityId);
+    res.json({ success: true, data: logs });
+});
+// Global Error Handler
+app.use(errors_1.errorHandler);
+exports.default = app;
