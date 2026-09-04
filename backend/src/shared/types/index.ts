@@ -151,6 +151,58 @@ export interface Evidence {
   deletedAt?: Date | null;
 }
 
+export type ReportFormat = 'PDF' | 'JSON' | 'CSV';
+
+export type ReportStatus = 'GENERATED' | 'AMENDED' | 'ARCHIVED';
+
+export interface ReportContentSummary {
+  inspectionId: string;
+  productName: string;
+  category: string;
+  brand?: string;
+  inspectorName: string;
+  inspectionDate: string;
+  ruleVersion: string;
+  totalDeclarationsChecked: number;
+  passedChecksCount: number;
+  flaggedChecksCount: number;
+  manualReviewsCount: number;
+  violationsCount: number;
+  criticalViolationsCount: number;
+  overallDisposition: 'COMPLIANT' | 'NON_COMPLIANT' | 'REQUIRES_REINSPECTION';
+  violations: Array<{
+    ruleCode: string;
+    legalReference: string;
+    severity: ViolationSeverity;
+    explanation: string;
+    packageSide?: string;
+  }>;
+  evidenceSnapshots: Array<{
+    evidenceId: string;
+    packageSide: string;
+    imageUrl: string;
+  }>;
+}
+
+export interface Report {
+  id: string;
+  inspectionId: string;
+  reportVersion: string; // e.g. "v1.0", "v1.1", "v2.0"
+  format: ReportFormat;
+  status: ReportStatus;
+  downloadUrl: string;
+  storageKey: string;
+  fileSizeBytes: number;
+  verificationChecksum: string;
+  contentSummary: ReportContentSummary;
+  generatedBy: string;
+  previousReportId?: string; // pointer to previous version if amended
+  amendmentReason?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
 export interface AuditLog {
   id: string;
   userId: string;

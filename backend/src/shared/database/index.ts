@@ -7,7 +7,8 @@ import {
   Evidence, 
   AuditLog, 
   Inspection, 
-  User 
+  User,
+  Report
 } from '../types/index.js';
 
 export interface InMemoryDb {
@@ -18,6 +19,7 @@ export interface InMemoryDb {
   checkResults: Map<string, CheckResult>;
   violations: Map<string, Violation>;
   evidence: Map<string, Evidence>;
+  reports: Map<string, Report>;
   auditLogs: AuditLog[];
   idempotencyKeys: Map<string, { response: any; timestamp: number }>;
 }
@@ -31,6 +33,7 @@ class DatabaseManager {
     checkResults: new Map(),
     violations: new Map(),
     evidence: new Map(),
+    reports: new Map(),
     auditLogs: [],
     idempotencyKeys: new Map(),
   };
@@ -52,6 +55,7 @@ class DatabaseManager {
     this.inMemory.checkResults.clear();
     this.inMemory.violations.clear();
     this.inMemory.evidence.clear();
+    this.inMemory.reports.clear();
     this.inMemory.auditLogs = [];
     this.inMemory.idempotencyKeys.clear();
     this.seedRules();

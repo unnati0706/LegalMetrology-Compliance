@@ -1,10 +1,32 @@
 -- SIH26034 Legal Metrology Compliance Platform
 -- Migration: 001_initial_schema.sql
--- Base Schema for Modules B21 - B25
+-- Base Schema for Modules B21 - B30
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 1. Rules Table
+-- 1. Inspections Table
+CREATE TABLE IF NOT EXISTS inspections (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    inspector_id UUID NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    category VARCHAR(128) NOT NULL,
+    brand VARCHAR(128) NULL,
+    manufacturer_id VARCHAR(128) NULL,
+    location VARCHAR(255) NULL,
+    status VARCHAR(64) NOT NULL DEFAULT 'PENDING_ANALYSIS',
+    rule_version VARCHAR(32) NOT NULL DEFAULT 'PCR-2011-v2.0',
+    metadata JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    deleted_at TIMESTAMP WITH TIME ZONE NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_inspections_status ON inspections(status);
+CREATE INDEX IF NOT EXISTS idx_inspections_category ON inspections(category);
+CREATE INDEX IF NOT EXISTS idx_inspections_inspector ON inspections(inspector_id);
+CREATE INDEX IF NOT EXISTS idx_inspections_created ON inspections(created_at);
+
+-- 2. Rules Table
 CREATE TABLE IF NOT EXISTS rules (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     rule_code VARCHAR(64) NOT NULL,
@@ -26,10 +48,10 @@ CREATE INDEX IF NOT EXISTS idx_rules_category ON rules(category);
 CREATE INDEX IF NOT EXISTS idx_rules_version ON rules(version);
 CREATE INDEX IF NOT EXISTS idx_rules_active ON rules(is_active);
 
--- 2. Evidence Table
+-- 3. Evidence Table
 CREATE TABLE IF NOT EXISTS evidence (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    inspection_id UUID NOT NULL,
+    inspection_id UUID NOT NULL REFERENCES inspections(id) ON DELETE CASCADE,
     image_url TEXT NOT NULL,
     storage_key VARCHAR(255) NOT NULL,
     package_side VARCHAR(32) NOT NULL DEFAULT 'PDP',
@@ -42,11 +64,12 @@ CREATE TABLE IF NOT EXISTS evidence (
 );
 
 CREATE INDEX IF NOT EXISTS idx_evidence_inspection ON evidence(inspection_id);
+CREATE INDEX IF NOT EXISTS idx_evidence_side ON evidence(package_side);
 
--- 3. Declarations Table
+-- 4. Declarations Table
 CREATE TABLE IF NOT EXISTS declarations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    inspection_id UUID NOT NULL,
+    inspection_id UUID NOT NULL REFERENCES inspections(id) ON DELETE CASCADE,
     field VARCHAR(128) NOT NULL,
     value TEXT NOT NULL,
     raw_text TEXT NULL,
@@ -65,10 +88,10 @@ CREATE INDEX IF NOT EXISTS idx_declarations_inspection ON declarations(inspectio
 CREATE INDEX IF NOT EXISTS idx_declarations_field ON declarations(field);
 CREATE INDEX IF NOT EXISTS idx_declarations_status ON declarations(status);
 
--- 4. Check Results Table
+-- 5. Check Results Table
 CREATE TABLE IF NOT EXISTS check_results (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    inspection_id UUID NOT NULL,
+    inspection_id UUID NOT NULL REFERENCES inspections(id) ON DELETE CASCADE,
     rule_id UUID NOT NULL REFERENCES rules(id) ON DELETE RESTRICT,
     rule_code VARCHAR(64) NULL,
     rule_version VARCHAR(32) NOT NULL,
@@ -92,10 +115,10 @@ CREATE INDEX IF NOT EXISTS idx_check_results_rule ON check_results(rule_id);
 CREATE INDEX IF NOT EXISTS idx_check_results_status ON check_results(status);
 CREATE INDEX IF NOT EXISTS idx_check_results_created ON check_results(created_at);
 
--- 5. Violations Table
+-- 6. Violations Table
 CREATE TABLE IF NOT EXISTS violations (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    inspection_id UUID NOT NULL,
+    inspection_id UUID NOT NULL REFERENCES inspections(id) ON DELETE CASCADE,
     check_result_id UUID NOT NULL REFERENCES check_results(id) ON DELETE RESTRICT,
     rule_id UUID NOT NULL REFERENCES rules(id) ON DELETE RESTRICT,
     rule_code VARCHAR(64) NOT NULL,
@@ -121,7 +144,32 @@ CREATE INDEX IF NOT EXISTS idx_violations_status ON violations(status);
 CREATE INDEX IF NOT EXISTS idx_violations_rule_code ON violations(rule_code);
 CREATE INDEX IF NOT EXISTS idx_violations_created ON violations(created_at);
 
--- 6. Audit Logs Table
+-- 7. Reports Table
+CREATE TABLE IF NOT EXISTS reports (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    inspection_id UUID NOT NULL REFERENCES inspections(id) ON DELETE CASCADE,
+    report_version VARCHAR(32) NOT NULL DEFAULT 'v1.0',
+    format VARCHAR(16) NOT NULL DEFAULT 'PDF',
+    status VARCHAR(32) NOT NULL DEFAULT 'GENERATED',
+    download_url TEXT NOT NULL,
+    storage_key VARCHAR(255) NOT NULL,
+    file_size_bytes BIGINT NOT NULL,
+    verification_checksum VARCHAR(128) NOT NULL,
+    content_summary JSONB NOT NULL,
+    generated_by UUID NOT NULL,
+    previous_report_id UUID NULL REFERENCES reports(id) ON DELETE SET NULL,
+    amendment_reason TEXT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    deleted_at TIMESTAMP WITH TIME ZONE NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_reports_inspection ON reports(inspection_id);
+CREATE INDEX IF NOT EXISTS idx_reports_version ON reports(report_version);
+CREATE INDEX IF NOT EXISTS idx_reports_checksum ON reports(verification_checksum);
+CREATE INDEX IF NOT EXISTS idx_reports_created ON reports(created_at);
+
+-- 8. Audit Logs Table
 CREATE TABLE IF NOT EXISTS audit_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id VARCHAR(64) NOT NULL,

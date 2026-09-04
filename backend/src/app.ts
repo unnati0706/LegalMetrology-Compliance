@@ -2,12 +2,17 @@ import express, { Express } from 'express';
 import { securityHeaders, corsMiddleware, apiLimiter } from './shared/middleware/index.js';
 import { errorHandler } from './shared/errors/index.js';
 
-// Import Module Routes
+// Import Module Routes (B21 - B30)
 import b21Router from './modules/b21/b21.routes.js';
 import b22Router from './modules/b22/b22.routes.js';
 import b23Router from './modules/b23/b23.routes.js';
 import b24Router from './modules/b24/b24.routes.js';
 import b25Router from './modules/b25/b25.routes.js';
+import b26Router from './modules/b26/b26.routes.js';
+import b27Router from './modules/b27/b27.routes.js';
+import b28Router from './modules/b28/b28.routes.js';
+import b29Router from './modules/b29/b29.routes.js';
+import b30Router from './modules/b30/b30.routes.js';
 
 export function createApp(): Express {
   const app = express();
@@ -23,15 +28,24 @@ export function createApp(): Express {
 
   // Health check
   app.get('/health', (_req, res) => {
-    res.status(200).json({ status: 'HEALTHY', timestamp: new Date().toISOString() });
+    res.status(200).json({
+      status: 'HEALTHY',
+      modules: ['B21', 'B22', 'B23', 'B24', 'B25', 'B26', 'B27', 'B28', 'B29', 'B30'],
+      timestamp: new Date().toISOString()
+    });
   });
 
-  // Mount Compliance Modules B21 - B25
+  // Mount Compliance & History Modules B21 - B30
   app.use('/api/v1/b21', b21Router);
   app.use('/api/v1/b22', b22Router);
   app.use('/api/v1/b23', b23Router);
   app.use('/api/v1/b24', b24Router);
   app.use('/api/v1/b25', b25Router);
+  app.use('/api/v1/b26', b26Router);
+  app.use('/api/v1/b27', b27Router);
+  app.use('/api/v1/b28', b28Router);
+  app.use('/api/v1/b29', b29Router);
+  app.use('/api/v1/b30', b30Router);
 
   // Global Error Handler
   app.use(errorHandler);
