@@ -15,3 +15,7 @@ export function requireRoles(...allowedRoles: UserRole[]) {
     next();
   };
 }
+
+export function rbacGuard(allowedRoles: UserRole[]) {
+  return requireRoles(...allowedRoles);
+}

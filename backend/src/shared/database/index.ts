@@ -8,7 +8,12 @@ import {
   AuditLog, 
   Inspection, 
   User,
-  Report
+  Report,
+  AnalyticsSnapshot,
+  ViolationPattern,
+  GeographicZoneMetric,
+  RiskProfile,
+  InspectNextItem
 } from '../types/index.js';
 
 export interface InMemoryDb {
@@ -20,6 +25,11 @@ export interface InMemoryDb {
   violations: Map<string, Violation>;
   evidence: Map<string, Evidence>;
   reports: Map<string, Report>;
+  analyticsSnapshots: Map<string, AnalyticsSnapshot>;
+  violationPatterns: Map<string, ViolationPattern>;
+  geoZones: Map<string, GeographicZoneMetric>;
+  riskProfiles: Map<string, RiskProfile>;
+  inspectNextQueue: Map<string, InspectNextItem>;
   auditLogs: AuditLog[];
   idempotencyKeys: Map<string, { response: any; timestamp: number }>;
 }
@@ -34,6 +44,11 @@ class DatabaseManager {
     violations: new Map(),
     evidence: new Map(),
     reports: new Map(),
+    analyticsSnapshots: new Map(),
+    violationPatterns: new Map(),
+    geoZones: new Map(),
+    riskProfiles: new Map(),
+    inspectNextQueue: new Map(),
     auditLogs: [],
     idempotencyKeys: new Map(),
   };
@@ -41,6 +56,7 @@ class DatabaseManager {
   constructor() {
     this.seedRules();
     this.seedUsers();
+    this.seedSampleData();
   }
 
   public get store(): InMemoryDb {
@@ -56,10 +72,16 @@ class DatabaseManager {
     this.inMemory.violations.clear();
     this.inMemory.evidence.clear();
     this.inMemory.reports.clear();
+    this.inMemory.analyticsSnapshots.clear();
+    this.inMemory.violationPatterns.clear();
+    this.inMemory.geoZones.clear();
+    this.inMemory.riskProfiles.clear();
+    this.inMemory.inspectNextQueue.clear();
     this.inMemory.auditLogs = [];
     this.inMemory.idempotencyKeys.clear();
     this.seedRules();
     this.seedUsers();
+    this.seedSampleData();
   }
 
   private seedUsers(): void {
@@ -343,6 +365,179 @@ class DatabaseManager {
       this.inMemory.rules.set(r.id, r);
     }
   }
+
+  private seedSampleData(): void {
+    // Seed Sample Geo Zones (B33)
+    const sampleGeoZones: GeographicZoneMetric[] = [
+      {
+        id: 'geo-zone-mumbai',
+        state: 'Maharashtra',
+        district: 'Mumbai City',
+        pinCode: '400001',
+        coordinates: { latitude: 18.9388, longitude: 72.8354 },
+        totalInspections: 45,
+        totalViolations: 12,
+        complianceRate: 73.33,
+        riskTier: 'HIGH',
+        isHotspot: true,
+        activeInspectorsCount: 8,
+        lastInspectedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'geo-zone-pune',
+        state: 'Maharashtra',
+        district: 'Pune',
+        pinCode: '411001',
+        coordinates: { latitude: 18.5204, longitude: 73.8567 },
+        totalInspections: 30,
+        totalViolations: 4,
+        complianceRate: 86.67,
+        riskTier: 'LOW',
+        isHotspot: false,
+        activeInspectorsCount: 5,
+        lastInspectedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'geo-zone-delhi',
+        state: 'Delhi',
+        district: 'Central Delhi',
+        pinCode: '110001',
+        coordinates: { latitude: 28.6139, longitude: 77.2090 },
+        totalInspections: 60,
+        totalViolations: 18,
+        complianceRate: 70.00,
+        riskTier: 'CRITICAL',
+        isHotspot: true,
+        activeInspectorsCount: 12,
+        lastInspectedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'geo-zone-bengaluru',
+        state: 'Karnataka',
+        district: 'Bengaluru Urban',
+        pinCode: '560001',
+        coordinates: { latitude: 12.9716, longitude: 77.5946 },
+        totalInspections: 40,
+        totalViolations: 6,
+        complianceRate: 85.00,
+        riskTier: 'MEDIUM',
+        isHotspot: false,
+        activeInspectorsCount: 6,
+        lastInspectedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const g of sampleGeoZones) {
+      this.inMemory.geoZones.set(g.id, g);
+    }
+
+    // Seed Sample Risk Profiles (B34)
+    const sampleRiskProfiles: RiskProfile[] = [
+      {
+        id: 'risk-mfg-001',
+        entityId: 'mfg-priya-foods',
+        entityType: 'MANUFACTURER',
+        entityName: 'Priya Foods Ltd',
+        riskScore: 68.5,
+        riskTier: 'HIGH',
+        factorBreakdown: [
+          { factor: 'Historical Violation Rate', weight: 0.35, score: 75, contribution: 26.25, description: '3 critical violations in last 60 days' },
+          { factor: 'Rule Recidivism (MRP/Quantity)', weight: 0.25, score: 80, contribution: 20.0, description: 'Repeated unit sale price absence' },
+          { factor: 'Category Base Risk', weight: 0.20, score: 60, contribution: 12.0, description: 'Packaged Edible Commodities' },
+          { factor: 'Inspection Recency Gap', weight: 0.20, score: 51.25, contribution: 10.25, description: '45 days since last physical verification' }
+        ],
+        explanation: 'Elevated risk driven by recent repeat violations of Rule 6(1)(e) (MRP unit sale price) and high volume distribution in Western Zone.',
+        confidence: 0.94,
+        historicalInspectionCount: 18,
+        historicalViolationCount: 6,
+        lastComputedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'risk-cat-edible-oil',
+        entityId: 'cat-edible-oils',
+        entityType: 'CATEGORY',
+        entityName: 'Edible Oils & Fats',
+        riskScore: 78.0,
+        riskTier: 'CRITICAL',
+        factorBreakdown: [
+          { factor: 'Net Quantity Discrepancy Severity', weight: 0.40, score: 85, contribution: 34.0, description: 'Temperature corrected density declarations frequently omitted' },
+          { factor: 'Consumer Complaints Index', weight: 0.30, score: 70, contribution: 21.0, description: 'High volume of short-delivery reports' },
+          { factor: 'Regulatory Scrutiny Level', weight: 0.30, score: 76.67, contribution: 23.0, description: 'Mandatory surveillance category under PCR 2011 Second Schedule' }
+        ],
+        explanation: 'Critical risk category due to widespread omission of volume-to-mass conversion at 30°C and dual-unit declaration non-compliance.',
+        confidence: 0.96,
+        historicalInspectionCount: 42,
+        historicalViolationCount: 19,
+        lastComputedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const rp of sampleRiskProfiles) {
+      this.inMemory.riskProfiles.set(rp.id, rp);
+    }
+
+    // Seed Sample Inspect Next Queue (B35)
+    const sampleQueue: InspectNextItem[] = [
+      {
+        id: 'queue-001',
+        entityId: 'mfg-priya-foods',
+        entityType: 'MANUFACTURER',
+        targetName: 'Priya Foods Ltd - Packaging Unit 3',
+        category: 'Spices & Condiments',
+        region: 'Maharashtra / Pune',
+        pinCode: '411028',
+        priorityScore: 84.5,
+        riskTier: 'HIGH',
+        riskProfileId: 'risk-mfg-001',
+        recommendedChecklist: [
+          'PCR-2011-R06-MRP-USP',
+          'PCR-2011-R06-NET-QTY',
+          'PCR-2011-R07-FONT-HEIGHT'
+        ],
+        status: 'QUEUED',
+        estimatedEffortHours: 3.5,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        id: 'queue-002',
+        entityId: 'mfg-royal-beverages',
+        entityType: 'MANUFACTURER',
+        targetName: 'Royal Beverages Bottling Plant',
+        category: 'Packaged Drinking Water',
+        region: 'Delhi / Central Delhi',
+        pinCode: '110006',
+        priorityScore: 92.0,
+        riskTier: 'CRITICAL',
+        recommendedChecklist: [
+          'PCR-2011-R06-NET-QTY',
+          'PCR-2011-R06-DATE-FORMAT',
+          'PCR-2011-R06-MFG-NAME'
+        ],
+        status: 'QUEUED',
+        estimatedEffortHours: 4.0,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }
+    ];
+
+    for (const q of sampleQueue) {
+      this.inMemory.inspectNextQueue.set(q.id, q);
+    }
+  }
 }
 
 export const db = new DatabaseManager();
+

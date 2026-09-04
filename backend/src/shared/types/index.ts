@@ -242,3 +242,152 @@ export interface PaginationQuery {
   sortBy?: string;
   sortOrder?: 'ASC' | 'DESC';
 }
+
+// B31 Analytics Types
+export interface AnalyticsKPIs {
+  totalInspections: number;
+  compliantCount: number;
+  nonCompliantCount: number;
+  overallComplianceRate: number; // percentage e.g. 85.5
+  totalViolations: number;
+  criticalViolations: number;
+  majorViolations: number;
+  minorViolations: number;
+  averageProcessingTimeMs: number;
+  topViolatedRules: Array<{
+    ruleCode: string;
+    ruleTitle: string;
+    count: number;
+    severity: ViolationSeverity;
+  }>;
+  categoryBreakdown: Array<{
+    category: string;
+    total: number;
+    violations: number;
+    complianceRate: number;
+  }>;
+}
+
+export interface AnalyticsSnapshot {
+  id: string;
+  periodType: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY' | 'CUSTOM';
+  periodKey: string; // e.g. "2026-09", "2026-W36"
+  metricsSummary: AnalyticsKPIs;
+  generatedBy: string;
+  status: 'ACTIVE' | 'ARCHIVED';
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B32 Violation Pattern Types
+export type PatternType = 
+  | 'CHRONIC_NON_COMPLIANT' 
+  | 'CATEGORY_WIDE_DEFECT' 
+  | 'SEASONAL_SURGE' 
+  | 'ISOLATED_INCIDENT';
+
+export type PatternStatus = 'ACTIVE' | 'ACKNOWLEDGED' | 'INVESTIGATING' | 'RESOLVED' | 'DISMISSED';
+
+export interface ViolationPattern {
+  id: string;
+  patternCode: string;
+  patternType: PatternType;
+  entityId: string; // manufacturerId or category name
+  entityType: 'MANUFACTURER' | 'CATEGORY' | 'PRODUCT';
+  entityName: string;
+  ruleCodes: string[];
+  occurrenceCount: number;
+  severity: ViolationSeverity;
+  confidence: number;
+  explanation: string;
+  status: PatternStatus;
+  firstSeenAt: Date;
+  lastSeenAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B33 Geographic Analysis Types
+export type GeoRiskTier = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface GeographicZoneMetric {
+  id: string;
+  state: string; // e.g., "Maharashtra", "Delhi", "Karnataka"
+  district?: string; // e.g., "Pune", "Central Delhi", "Bengaluru Urban"
+  pinCode?: string; // 6-digit Indian PIN e.g. "411001"
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
+  totalInspections: number;
+  totalViolations: number;
+  complianceRate: number;
+  riskTier: GeoRiskTier;
+  isHotspot: boolean;
+  activeInspectorsCount: number;
+  lastInspectedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B34 Risk Profile Types
+export type RiskTier = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+
+export interface FactorContribution {
+  factor: string;
+  weight: number;
+  score: number;
+  contribution: number;
+  description: string;
+}
+
+export interface RiskProfile {
+  id: string;
+  entityId: string; // e.g. manufacturerId, productName, category
+  entityType: 'MANUFACTURER' | 'PRODUCT' | 'CATEGORY';
+  entityName: string;
+  riskScore: number; // 0.00 to 100.00
+  riskTier: RiskTier;
+  factorBreakdown: FactorContribution[];
+  explanation: string;
+  confidence: number;
+  historicalInspectionCount: number;
+  historicalViolationCount: number;
+  lastComputedAt: Date;
+  isOverridden?: boolean;
+  overriddenBy?: string;
+  overrideReason?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+
+// B35 Inspect-Next Queue Types
+export type InspectNextStatus = 'QUEUED' | 'ASSIGNED' | 'INSPECTED' | 'DEFERRED' | 'CANCELLED';
+
+export interface InspectNextItem {
+  id: string;
+  entityId: string;
+  entityType: 'MANUFACTURER' | 'PRODUCT' | 'FACILITY';
+  targetName: string;
+  category: string;
+  region: string; // State / District
+  pinCode?: string;
+  priorityScore: number; // 0 to 100 (higher = inspect sooner)
+  riskTier: RiskTier;
+  riskProfileId?: string;
+  recommendedChecklist: string[]; // specific rules to check
+  status: InspectNextStatus;
+  assignedInspectorId?: string;
+  assignedInspectorName?: string;
+  assignedAt?: Date;
+  deferredReason?: string;
+  estimatedEffortHours?: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+}
+

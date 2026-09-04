@@ -48,3 +48,6 @@ export class AuditService {
     return logs.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
   }
 }
+
+export const auditLogService = AuditService;
+

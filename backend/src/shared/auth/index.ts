@@ -24,6 +24,10 @@ export function generateToken(payload: AuthUser, expiresIn: string = config.jwtE
   return jwt.sign(payload, config.jwtSecret, { expiresIn } as jwt.SignOptions);
 }
 
+export function generateTestToken(payload: AuthUser): string {
+  return generateToken(payload, '1h');
+}
+
 export function authenticate(req: Request, _res: Response, next: NextFunction): void {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -39,3 +43,6 @@ export function authenticate(req: Request, _res: Response, next: NextFunction): 
     return next(ApiError.unauthorized('Invalid or expired authentication token'));
   }
 }
+
+export const authenticateJwt = authenticate;
+export type AuthRequest = Request & { user?: AuthUser };
