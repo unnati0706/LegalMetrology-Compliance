@@ -1,4 +1,19 @@
-import { Inspection, CheckResult, Declaration, EvidenceItem, InspectorNote, Violation } from '../types/index.js';
+import { 
+  Inspection, 
+  CheckResult, 
+  Declaration, 
+  EvidenceItem, 
+  InspectorNote, 
+  Violation,
+  ReportRecord,
+  EvidenceLockerFile,
+  KPISummary,
+  TrendDataPoint,
+  ViolationTrendData,
+  RuleDistributionData,
+  ManufacturerPattern,
+  CategoryPattern
+} from '../types/index.js';
 
 // Initial Mock Seed Data for instant interactive fidelity and standalone testing
 const mockInspections: Inspection[] = [
@@ -330,5 +345,336 @@ export const apiClient = {
     }
 
     return insp;
+  },
+
+  // Report Generation & Export (F26)
+  getReports: async (inspectionId?: string): Promise<ReportRecord[]> => {
+    if (inspectionId) {
+      return reportsState.filter(r => r.inspectionId === inspectionId);
+    }
+    return [...reportsState];
+  },
+
+  getReportById: async (reportId: string): Promise<ReportRecord> => {
+    const report = reportsState.find(r => r.id === reportId);
+    if (!report) throw new Error(`Report ${reportId} not found`);
+    return report;
+  },
+
+  generateReport: async (params: {
+    inspectionId: string;
+    format: 'PDF' | 'JSON' | 'CSV';
+    includeEvidenceThumbnails?: boolean;
+    legalNoticeHeader?: boolean;
+    officerRemarks?: string;
+  }): Promise<ReportRecord> => {
+    const insp = inspectionsState.find(i => i.id === params.inspectionId);
+    if (!insp) throw new Error(`Inspection ${params.inspectionId} not found`);
+
+    const versionNum = (reportsState.filter(r => r.inspectionId === params.inspectionId).length + 1).toFixed(1);
+    const newReport: ReportRecord = {
+      id: `rep-${Date.now().toString(36)}`,
+      inspectionId: params.inspectionId,
+      productName: insp.productName,
+      version: `v${versionNum}`,
+      format: params.format,
+      fileUrl: `/reports/export-${insp.id}-${versionNum}.${params.format.toLowerCase()}`,
+      fileSize: params.format === 'PDF' ? '1.42 MB' : params.format === 'JSON' ? '28 KB' : '14 KB',
+      sha256Hash: `a7f4b89e90218e887019fba82c9${Math.floor(Math.random() * 89999 + 10000)}dce08b45173e210`,
+      generatedBy: 'Inspector Amit Patel',
+      generatedAt: new Date().toISOString(),
+      status: 'READY',
+      summaryDisposition: insp.overallDisposition || (insp.violationsCount > 0 ? 'NON_COMPLIANT' : 'COMPLIANT'),
+      includeEvidenceThumbnails: params.includeEvidenceThumbnails ?? true,
+      legalNoticeHeader: params.legalNoticeHeader ?? true,
+      officerRemarks: params.officerRemarks || 'Statutory assessment completed in accordance with Legal Metrology Act, 2009 & PCR 2011.',
+    };
+
+    reportsState.unshift(newReport);
+    return newReport;
+  },
+
+  // Evidence Locker & Report History (F27)
+  getEvidenceLockerFiles: async (inspectionId?: string): Promise<EvidenceLockerFile[]> => {
+    if (inspectionId) {
+      return evidenceLockerState.filter(f => f.inspectionId === inspectionId);
+    }
+    return [...evidenceLockerState];
+  },
+
+  uploadEvidenceLockerFile: async (file: Partial<EvidenceLockerFile>): Promise<EvidenceLockerFile> => {
+    const newFile: EvidenceLockerFile = {
+      id: `ev-file-${Date.now()}`,
+      inspectionId: file.inspectionId || 'insp-sample-01',
+      fileName: file.fileName || 'evidence_capture.jpg',
+      packageSide: file.packageSide || 'FRONT',
+      imageUrl: file.imageUrl || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+      qualityScore: file.qualityScore || 0.94,
+      resolution: '3840x2160',
+      fileSize: '3.4 MB',
+      sha256Hash: `8c3b7a${Date.now().toString(16)}098fe`,
+      capturedAt: new Date().toISOString(),
+      tags: file.tags || ['PDP', 'Raw Capture', 'Validated'],
+    };
+    evidenceLockerState.unshift(newFile);
+    return newFile;
+  },
+
+  // Supervisor / Enforcement Dashboard (F28)
+  getKPISummary: async (): Promise<KPISummary> => {
+    const total = inspectionsState.length + 42;
+    const compliant = inspectionsState.filter(i => i.overallDisposition === 'COMPLIANT').length + 31;
+    const flagged = inspectionsState.filter(i => i.status === 'FLAGGED' || i.violationsCount > 0).length + 8;
+    const manualReview = inspectionsState.filter(i => i.manualReviewCount > 0).length + 3;
+
+    return {
+      totalInspections: total,
+      compliantCount: compliant,
+      flaggedCount: flagged,
+      manualReviewCount: manualReview,
+      complianceRate: Math.round((compliant / total) * 100),
+      avgResolutionTimeHours: 1.8,
+      period: 'Last 30 Days (National Enforcement Zone)',
+    };
+  },
+
+  getTrendSparklineData: async (): Promise<TrendDataPoint[]> => {
+    return [
+      { date: 'Mon', total: 12, compliant: 10, flagged: 1, manualReview: 1 },
+      { date: 'Tue', total: 15, compliant: 11, flagged: 3, manualReview: 1 },
+      { date: 'Wed', total: 18, compliant: 14, flagged: 2, manualReview: 2 },
+      { date: 'Thu', total: 14, compliant: 12, flagged: 1, manualReview: 1 },
+      { date: 'Fri', total: 22, compliant: 17, flagged: 4, manualReview: 1 },
+      { date: 'Sat', total: 9, compliant: 8, flagged: 1, manualReview: 0 },
+      { date: 'Sun', total: 6, compliant: 5, flagged: 1, manualReview: 0 },
+    ];
+  },
+
+  // Violation Analytics (F29)
+  getViolationTrends: async (): Promise<ViolationTrendData[]> => {
+    return [
+      { period: 'Week 1', mrpViolations: 4, netQtyViolations: 2, dateViolations: 1, mfgViolations: 3, consumerCareViolations: 1 },
+      { period: 'Week 2', mrpViolations: 6, netQtyViolations: 3, dateViolations: 2, mfgViolations: 2, consumerCareViolations: 1 },
+      { period: 'Week 3', mrpViolations: 3, netQtyViolations: 1, dateViolations: 0, mfgViolations: 4, consumerCareViolations: 2 },
+      { period: 'Week 4', mrpViolations: 8, netQtyViolations: 4, dateViolations: 3, mfgViolations: 5, consumerCareViolations: 2 },
+    ];
+  },
+
+  getRuleDistributions: async (): Promise<RuleDistributionData[]> => {
+    return [
+      { ruleCode: 'PCR-2011-R06-USP', ruleTitle: 'Unit Sale Price Missing / Font Discrepancy', count: 24, percentage: 35, severity: 'MAJOR' },
+      { ruleCode: 'PCR-2011-R06-MRP', ruleTitle: 'MRP Missing Inclusive of All Taxes', count: 18, percentage: 26, severity: 'CRITICAL' },
+      { ruleCode: 'PCR-2011-R06-MFG', ruleTitle: 'Manufacturer Name & Complete Address Incomplete', count: 12, percentage: 17, severity: 'MAJOR' },
+      { ruleCode: 'PCR-2011-R09-NET', ruleTitle: 'Net Quantity Font Area Under Minimum Specification', count: 9, percentage: 13, severity: 'MINOR' },
+      { ruleCode: 'PCR-2011-R06-CARE', ruleTitle: 'Consumer Care Contact Details / Email Missing', count: 6, percentage: 9, severity: 'MINOR' },
+    ];
+  },
+
+  // Manufacturer / Category Pattern Analytics (F30)
+  getManufacturerPatterns: async (query?: string, riskFilter?: string): Promise<ManufacturerPattern[]> => {
+    let list = [...mockManufacturerPatterns];
+    if (query) {
+      const q = query.toLowerCase();
+      list = list.filter(m => m.name.toLowerCase().includes(q) || m.category.toLowerCase().includes(q));
+    }
+    if (riskFilter && riskFilter !== 'ALL') {
+      list = list.filter(m => m.riskLevel === riskFilter);
+    }
+    return list;
+  },
+
+  getCategoryPatterns: async (): Promise<CategoryPattern[]> => {
+    return [
+      { category: 'Spices & Condiments', totalInspections: 28, violationsCount: 9, violationRate: 32.1, topViolation: 'Unit Sale Price Incorrect' },
+      { category: 'Packaged Drinking Water', totalInspections: 34, violationsCount: 14, violationRate: 41.2, topViolation: 'Missing Batch / Date Code' },
+      { category: 'Edible Oils & Fats', totalInspections: 22, violationsCount: 4, violationRate: 18.2, topViolation: 'Net Weight Tolerance' },
+      { category: 'Confectionery & Biscuits', totalInspections: 19, violationsCount: 3, violationRate: 15.8, topViolation: 'Consumer Care Address' },
+      { category: 'Personal Care & Cosmetics', totalInspections: 15, violationsCount: 2, violationRate: 13.3, topViolation: 'Importer Address Missing' },
+    ];
+  },
+
+  updateManufacturerEscalation: async (manufacturerId: string, status: ManufacturerPattern['escalationStatus']) => {
+    const item = mockManufacturerPatterns.find(m => m.id === manufacturerId);
+    if (!item) throw new Error(`Manufacturer ${manufacturerId} not found`);
+    item.escalationStatus = status;
+    return item;
   }
 };
+
+// Seed mock states for F26 - F30
+const reportsState: ReportRecord[] = [
+  {
+    id: 'rep-001',
+    inspectionId: 'insp-sample-01',
+    productName: 'Priya Foods Premium Chilli Powder 500g',
+    version: 'v1.0',
+    format: 'PDF',
+    fileUrl: '/reports/export-insp-sample-01-v1.0.pdf',
+    fileSize: '1.42 MB',
+    sha256Hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    generatedBy: 'Inspector Amit Patel',
+    generatedAt: new Date(Date.now() - 3600000).toISOString(),
+    status: 'READY',
+    summaryDisposition: 'REQUIRES_REINSPECTION',
+    includeEvidenceThumbnails: true,
+    legalNoticeHeader: true,
+    officerRemarks: 'Unit sale price declaration requires verification against second proviso to Rule 6(1)(e).',
+  },
+  {
+    id: 'rep-002',
+    inspectionId: 'insp-sample-02',
+    productName: 'Royal Natural Mineral Water 1L',
+    version: 'v1.0',
+    format: 'PDF',
+    fileUrl: '/reports/export-insp-sample-02-v1.0.pdf',
+    fileSize: '1.18 MB',
+    sha256Hash: '5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8',
+    generatedBy: 'Inspector Amit Patel',
+    generatedAt: new Date(Date.now() - 24 * 3600000).toISOString(),
+    status: 'READY',
+    summaryDisposition: 'NON_COMPLIANT',
+    includeEvidenceThumbnails: true,
+    legalNoticeHeader: true,
+    officerRemarks: 'Notice issued under Section 36 of Legal Metrology Act 2009 for non-declaration of MRP and MFG date.',
+  },
+  {
+    id: 'rep-003',
+    inspectionId: 'insp-sample-03',
+    productName: 'Nature Fresh Sunflower Oil 1L',
+    version: 'v1.0',
+    format: 'PDF',
+    fileUrl: '/reports/export-insp-sample-03-v1.0.pdf',
+    fileSize: '1.25 MB',
+    sha256Hash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a',
+    generatedBy: 'Inspector Amit Patel',
+    generatedAt: new Date(Date.now() - 40 * 3600000).toISOString(),
+    status: 'READY',
+    summaryDisposition: 'COMPLIANT',
+    includeEvidenceThumbnails: true,
+    legalNoticeHeader: false,
+    officerRemarks: 'All 7 mandatory declarations verified in accordance with PCR 2011.',
+  }
+];
+
+const evidenceLockerState: EvidenceLockerFile[] = [
+  {
+    id: 'ev-01',
+    inspectionId: 'insp-sample-01',
+    fileName: 'priya_chilli_pdp_front.jpg',
+    packageSide: 'PDP',
+    imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
+    qualityScore: 0.96,
+    resolution: '4032x3024',
+    fileSize: '4.2 MB',
+    sha256Hash: '7d2a58b9f0c2e3914a8b8a92f8910a30b5e2849203a9856a911762cf12e09412',
+    capturedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+    tags: ['PDP', 'High Resolution', 'OCR Processed', 'Net Qty Area'],
+  },
+  {
+    id: 'ev-02',
+    inspectionId: 'insp-sample-01',
+    fileName: 'priya_chilli_back_declarations.jpg',
+    packageSide: 'BACK',
+    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+    qualityScore: 0.91,
+    resolution: '4032x3024',
+    fileSize: '3.8 MB',
+    sha256Hash: '3f5b9c81e92d847156102a9b47e2a9b9102ef1904a8b7c6d5e4f3a2b1c0d9e8f',
+    capturedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+    tags: ['BACK', 'MRP Verified', 'Consumer Care', 'USP Checked'],
+  },
+  {
+    id: 'ev-03',
+    inspectionId: 'insp-sample-01',
+    fileName: 'priya_chilli_top_mfg_batch.jpg',
+    packageSide: 'TOP',
+    imageUrl: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&auto=format&fit=crop&q=60',
+    qualityScore: 0.88,
+    resolution: '3024x3024',
+    fileSize: '2.9 MB',
+    sha256Hash: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b',
+    capturedAt: new Date(Date.now() - 2 * 3600000).toISOString(),
+    tags: ['TOP', 'Date of Mfg', 'Batch No'],
+  },
+  {
+    id: 'ev-04',
+    inspectionId: 'insp-sample-02',
+    fileName: 'royal_water_bottle_label.jpg',
+    packageSide: 'FRONT',
+    imageUrl: 'https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=800&auto=format&fit=crop&q=60',
+    qualityScore: 0.94,
+    resolution: '3840x2160',
+    fileSize: '3.1 MB',
+    sha256Hash: '1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b',
+    capturedAt: new Date(Date.now() - 24 * 3600000).toISOString(),
+    tags: ['FRONT', 'Violation Evidence', 'Missing Declarations'],
+  }
+];
+
+const mockManufacturerPatterns: ManufacturerPattern[] = [
+  {
+    id: 'mfg-royal-beverages',
+    name: 'Royal Beverages Bottling Plant',
+    category: 'Packaged Drinking Water',
+    totalInspections: 14,
+    violationCount: 9,
+    riskScore: 88,
+    repeatCount: 4,
+    topViolatedRules: ['PCR-2011-R06-MRP', 'PCR-2011-R06-DATE', 'PCR-2011-R06-USP'],
+    lastViolationDate: new Date(Date.now() - 24 * 3600000).toISOString(),
+    riskLevel: 'HIGH',
+    escalationStatus: 'SHOW_CAUSE_PENDING',
+  },
+  {
+    id: 'mfg-priya-foods',
+    name: 'Priya Foods Ltd',
+    category: 'Spices & Condiments',
+    totalInspections: 18,
+    violationCount: 4,
+    riskScore: 54,
+    repeatCount: 2,
+    topViolatedRules: ['PCR-2011-R06-USP', 'PCR-2011-R09-NET'],
+    lastViolationDate: new Date(Date.now() - 2 * 3600000).toISOString(),
+    riskLevel: 'MEDIUM',
+    escalationStatus: 'MONITORING',
+  },
+  {
+    id: 'mfg-delta-snax',
+    name: 'Delta Snacks & Confectionery Pvt Ltd',
+    category: 'Packaged Snacks & Chips',
+    totalInspections: 11,
+    violationCount: 7,
+    riskScore: 79,
+    repeatCount: 3,
+    topViolatedRules: ['PCR-2011-R06-MFG', 'PCR-2011-R06-MRP'],
+    lastViolationDate: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
+    riskLevel: 'HIGH',
+    escalationStatus: 'NOTICE_ISSUED',
+  },
+  {
+    id: 'mfg-sunstar',
+    name: 'Sunstar Agro Ltd',
+    category: 'Edible Oils & Fats',
+    totalInspections: 16,
+    violationCount: 1,
+    riskScore: 18,
+    repeatCount: 0,
+    topViolatedRules: ['PCR-2011-R06-CARE'],
+    lastViolationDate: new Date(Date.now() - 40 * 24 * 3600000).toISOString(),
+    riskLevel: 'LOW',
+    escalationStatus: 'MONITORING',
+  },
+  {
+    id: 'mfg-apex-dairy',
+    name: 'Apex Dairy & Agro Products',
+    category: 'Dairy Products',
+    totalInspections: 8,
+    violationCount: 3,
+    riskScore: 48,
+    repeatCount: 1,
+    topViolatedRules: ['PCR-2011-R06-DATE'],
+    lastViolationDate: new Date(Date.now() - 8 * 24 * 3600000).toISOString(),
+    riskLevel: 'MEDIUM',
+    escalationStatus: 'MONITORING',
+  }
+];

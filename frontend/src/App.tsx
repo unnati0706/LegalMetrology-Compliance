@@ -10,6 +10,14 @@ import { NotesPage } from './modules/f23/NotesPage.js';
 import { FinalizePage } from './modules/f24/FinalizePage.js';
 import { InspectionsPage } from './modules/f25/InspectionsPage.js';
 
+// Module Pages F26 - F30
+import { ReportPage } from './modules/f26/ReportPage.js';
+import { EvidenceLockerPage } from './modules/f27/EvidenceLockerPage.js';
+import { ReportsHistoryPage } from './modules/f27/ReportsHistoryPage.js';
+import { EnforcementDashboardPage } from './modules/f28/EnforcementDashboardPage.js';
+import { ViolationAnalyticsPage } from './modules/f29/ViolationAnalyticsPage.js';
+import { PatternsPage } from './modules/f30/PatternsPage.js';
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -37,6 +45,24 @@ export const App: React.FC = () => {
             {/* F24: Inspection Finalization */}
             <Route path="/finalize" element={<FinalizePage />} />
             <Route path="/inspections/:id/finalize" element={<FinalizePage />} />
+
+            {/* F26: Report Generation & Export */}
+            <Route path="/report" element={<ReportPage />} />
+            <Route path="/inspections/:id/report" element={<ReportPage />} />
+
+            {/* F27: Evidence Locker & Report History */}
+            <Route path="/inspections/:id/evidence-locker" element={<EvidenceLockerPage />} />
+            <Route path="/evidence-locker" element={<EvidenceLockerPage />} />
+            <Route path="/reports" element={<ReportsHistoryPage />} />
+
+            {/* F28: Supervisor / Enforcement Dashboard */}
+            <Route path="/enforcement/dashboard" element={<EnforcementDashboardPage />} />
+
+            {/* F29: Analytics: Violation Trends & Distribution */}
+            <Route path="/enforcement/analytics" element={<ViolationAnalyticsPage />} />
+
+            {/* F30: Manufacturer/Category Pattern Analytics */}
+            <Route path="/enforcement/patterns" element={<PatternsPage />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/inspections" replace />} />

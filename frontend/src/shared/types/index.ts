@@ -107,3 +107,92 @@ export interface Inspection {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface ReportRecord {
+  id: string;
+  inspectionId: string;
+  productName: string;
+  version: string;
+  format: 'PDF' | 'JSON' | 'CSV';
+  fileUrl: string;
+  fileSize: string;
+  sha256Hash: string;
+  generatedBy: string;
+  generatedAt: string;
+  status: 'READY' | 'GENERATING' | 'FAILED';
+  summaryDisposition: string;
+  includeEvidenceThumbnails?: boolean;
+  legalNoticeHeader?: boolean;
+  officerRemarks?: string;
+}
+
+export interface EvidenceLockerFile {
+  id: string;
+  inspectionId: string;
+  fileName: string;
+  packageSide: 'FRONT' | 'BACK' | 'TOP' | 'BOTTOM' | 'LEFT' | 'RIGHT' | 'PDP';
+  imageUrl: string;
+  qualityScore: number;
+  resolution: string;
+  fileSize: string;
+  sha256Hash: string;
+  capturedAt: string;
+  tags: string[];
+}
+
+export interface KPISummary {
+  totalInspections: number;
+  compliantCount: number;
+  flaggedCount: number;
+  manualReviewCount: number;
+  complianceRate: number;
+  avgResolutionTimeHours: number;
+  period: string;
+}
+
+export interface TrendDataPoint {
+  date: string;
+  total: number;
+  compliant: number;
+  flagged: number;
+  manualReview: number;
+}
+
+export interface ViolationTrendData {
+  period: string;
+  mrpViolations: number;
+  netQtyViolations: number;
+  dateViolations: number;
+  mfgViolations: number;
+  consumerCareViolations: number;
+}
+
+export interface RuleDistributionData {
+  ruleCode: string;
+  ruleTitle: string;
+  count: number;
+  percentage: number;
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
+}
+
+export interface ManufacturerPattern {
+  id: string;
+  name: string;
+  category: string;
+  totalInspections: number;
+  violationCount: number;
+  riskScore: number;
+  repeatCount: number;
+  topViolatedRules: string[];
+  lastViolationDate: string;
+  riskLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  escalationStatus?: 'MONITORING' | 'NOTICE_ISSUED' | 'SHOW_CAUSE_PENDING' | 'RE_INSPECTION_SCHEDULED';
+}
+
+export interface CategoryPattern {
+  category: string;
+  totalInspections: number;
+  violationsCount: number;
+  violationRate: number;
+  topViolation: string;
+}

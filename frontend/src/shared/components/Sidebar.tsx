@@ -6,7 +6,12 @@ import {
   FileText, 
   Lock, 
   Search, 
-  HelpCircle
+  HelpCircle,
+  FileSpreadsheet,
+  Archive,
+  Shield,
+  BarChart3,
+  Network
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -16,6 +21,10 @@ export const Sidebar: React.FC = () => {
     { to: '/manual-review', label: 'Manual Review Queue', icon: <CheckCircle2 size={18} />, module: 'F22' },
     { to: '/notes', label: 'Inspector Notes', icon: <FileText size={18} />, module: 'F23' },
     { to: '/finalize', label: 'Finalization & Sign-off', icon: <Lock size={18} />, module: 'F24' },
+    { to: '/reports', label: 'Report Vault & Export', icon: <FileSpreadsheet size={18} />, module: 'F26/27' },
+    { to: '/enforcement/dashboard', label: 'Enforcement KPIs', icon: <Shield size={18} />, module: 'F28' },
+    { to: '/enforcement/analytics', label: 'Violation Analytics', icon: <BarChart3 size={18} />, module: 'F29' },
+    { to: '/enforcement/patterns', label: 'Recidivism Patterns', icon: <Network size={18} />, module: 'F30' },
   ];
 
   return (
