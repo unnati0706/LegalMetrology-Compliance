@@ -18,6 +18,13 @@ import { EnforcementDashboardPage } from './modules/f28/EnforcementDashboardPage
 import { ViolationAnalyticsPage } from './modules/f29/ViolationAnalyticsPage.js';
 import { PatternsPage } from './modules/f30/PatternsPage.js';
 
+// Module Pages F31 - F35
+import { GeographicRiskPage } from './modules/f31/GeographicRiskPage.js';
+import { CasesWorkflowPage } from './modules/f32/CasesWorkflowPage.js';
+import { InspectNextPage } from './modules/f33/InspectNextPage.js';
+import { ManufacturerDashboardPage } from './modules/f34/ManufacturerDashboardPage.js';
+import { ProductLibraryPage } from './modules/f35/ProductLibraryPage.js';
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -63,6 +70,22 @@ export const App: React.FC = () => {
 
             {/* F30: Manufacturer/Category Pattern Analytics */}
             <Route path="/enforcement/patterns" element={<PatternsPage />} />
+
+            {/* F31: Geographic Risk Visualization */}
+            <Route path="/enforcement/map" element={<GeographicRiskPage />} />
+
+            {/* F32: Cases, Follow-Ups & Assignment Workflow */}
+            <Route path="/enforcement/cases" element={<CasesWorkflowPage />} />
+
+            {/* F33: Risk Dashboard & Inspect-Next Queue */}
+            <Route path="/enforcement/inspect-next" element={<InspectNextPage />} />
+
+            {/* F34: Manufacturer Dashboard */}
+            <Route path="/manufacturer/dashboard" element={<ManufacturerDashboardPage />} />
+
+            {/* F35: Manufacturer Product Library & Artwork Management */}
+            <Route path="/manufacturer/products" element={<ProductLibraryPage />} />
+            <Route path="/manufacturer/products/:id" element={<ProductLibraryPage />} />
 
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/inspections" replace />} />

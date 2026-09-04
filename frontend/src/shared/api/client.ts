@@ -12,7 +12,14 @@ import {
   ViolationTrendData,
   RuleDistributionData,
   ManufacturerPattern,
-  CategoryPattern
+  CategoryPattern,
+  GeoRiskLocation,
+  EnforcementCase,
+  InspectNextItem,
+  ManufacturerKPIs,
+  ManufacturerProduct,
+  ArtworkVersion,
+  FollowUpStatus
 } from '../types/index.js';
 
 // Initial Mock Seed Data for instant interactive fidelity and standalone testing
@@ -498,6 +505,128 @@ export const apiClient = {
     if (!item) throw new Error(`Manufacturer ${manufacturerId} not found`);
     item.escalationStatus = status;
     return item;
+  },
+
+  // Geographic Risk Visualization (F31)
+  getGeoRiskLocations: async (stateFilter?: string): Promise<GeoRiskLocation[]> => {
+    if (stateFilter && stateFilter !== 'ALL') {
+      return mockGeoRiskLocations.filter(loc => loc.state === stateFilter);
+    }
+    return [...mockGeoRiskLocations];
+  },
+
+  // Cases, Follow-Ups & Assignment Workflow (F32)
+  getEnforcementCases: async (statusFilter?: string, priorityFilter?: string): Promise<EnforcementCase[]> => {
+    let list = [...mockEnforcementCases];
+    if (statusFilter && statusFilter !== 'ALL') {
+      list = list.filter(c => c.status === statusFilter);
+    }
+    if (priorityFilter && priorityFilter !== 'ALL') {
+      list = list.filter(c => c.priority === priorityFilter);
+    }
+    return list;
+  },
+
+  getCaseById: async (caseId: string): Promise<EnforcementCase> => {
+    const item = mockEnforcementCases.find(c => c.id === caseId);
+    if (!item) throw new Error(`Case ${caseId} not found`);
+    return item;
+  },
+
+  updateCaseAssignment: async (caseId: string, inspectorId: string, inspectorName: string, priority?: EnforcementCase['priority']) => {
+    const item = mockEnforcementCases.find(c => c.id === caseId);
+    if (!item) throw new Error(`Case ${caseId} not found`);
+    item.assignedInspectorId = inspectorId;
+    item.assignedInspectorName = inspectorName;
+    if (priority) item.priority = priority;
+    item.updatedAt = new Date().toISOString();
+    return item;
+  },
+
+  updateCaseStatus: async (caseId: string, status: FollowUpStatus, note?: string) => {
+    const item = mockEnforcementCases.find(c => c.id === caseId);
+    if (!item) throw new Error(`Case ${caseId} not found`);
+    item.status = status;
+    if (note) {
+      item.latestNote = note;
+      item.notesCount += 1;
+    }
+    item.updatedAt = new Date().toISOString();
+    return item;
+  },
+
+  // Risk Dashboard & Inspect-Next Queue (F33)
+  getInspectNextQueue: async (categoryFilter?: string, riskBandFilter?: string): Promise<InspectNextItem[]> => {
+    let list = [...mockInspectNextQueue];
+    if (categoryFilter && categoryFilter !== 'ALL') {
+      list = list.filter(q => q.category === categoryFilter);
+    }
+    if (riskBandFilter && riskBandFilter !== 'ALL') {
+      list = list.filter(q => q.riskBand === riskBandFilter);
+    }
+    return list.sort((a, b) => b.riskScore - a.riskScore);
+  },
+
+  // Manufacturer Dashboard (F34)
+  getManufacturerKPIs: async (): Promise<ManufacturerKPIs> => {
+    const total = mockManufacturerProducts.length;
+    const compliant = mockManufacturerProducts.filter(p => p.complianceStatus === 'COMPLIANT').length;
+    const flagged = mockManufacturerProducts.filter(p => p.complianceStatus === 'FLAGGED').length;
+    const rate = Math.round((compliant / Math.max(total, 1)) * 100);
+
+    return {
+      totalProducts: total,
+      compliantProducts: compliant,
+      flaggedProducts: flagged,
+      overallComplianceRate: rate,
+      pendingRemediations: flagged + 1,
+      activeArtworks: mockManufacturerProducts.reduce((acc, p) => acc + p.artworks.length, 0),
+      lastSelfScanDate: new Date(Date.now() - 4 * 3600000).toISOString(),
+    };
+  },
+
+  // Manufacturer Product Library & Artwork Management (F35)
+  getManufacturerProducts: async (search?: string, category?: string): Promise<ManufacturerProduct[]> => {
+    let list = [...mockManufacturerProducts];
+    if (search) {
+      const q = search.toLowerCase();
+      list = list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q));
+    }
+    if (category && category !== 'ALL') {
+      list = list.filter(p => p.category === category);
+    }
+    return list;
+  },
+
+  getProductById: async (productId: string): Promise<ManufacturerProduct> => {
+    const product = mockManufacturerProducts.find(p => p.id === productId);
+    if (!product) throw new Error(`Product ${productId} not found`);
+    return product;
+  },
+
+  uploadArtworkVersion: async (productId: string, versionData: Partial<ArtworkVersion>): Promise<ArtworkVersion> => {
+    const product = mockManufacturerProducts.find(p => p.id === productId);
+    if (!product) throw new Error(`Product ${productId} not found`);
+
+    const newVersionNum = `v${(product.artworks.length + 1).toFixed(1)}`;
+    const newVersion: ArtworkVersion = {
+      id: `art-${Date.now().toString(36)}`,
+      productId,
+      version: versionData.version || newVersionNum,
+      status: versionData.status || 'DRAFT',
+      imageUrl: versionData.imageUrl || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+      packageSide: versionData.packageSide || 'PDP',
+      dimensions: versionData.dimensions || '210 x 297 mm (A4 Package)',
+      dpi: versionData.dpi || 300,
+      changeSummary: versionData.changeSummary || 'Updated Unit Sale Price font area & date code declaration.',
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: 'Packaging Compliance Lead',
+    };
+
+    product.artworks.unshift(newVersion);
+    product.currentArtworkVersion = newVersion.version;
+    product.updatedAt = new Date().toISOString();
+    return newVersion;
   }
 };
 
@@ -676,5 +805,341 @@ const mockManufacturerPatterns: ManufacturerPattern[] = [
     lastViolationDate: new Date(Date.now() - 8 * 24 * 3600000).toISOString(),
     riskLevel: 'MEDIUM',
     escalationStatus: 'MONITORING',
+  }
+];
+
+const mockGeoRiskLocations: GeoRiskLocation[] = [
+  {
+    id: 'geo-pune',
+    name: 'Pune Industrial Area & Wholesale Hub',
+    state: 'Maharashtra',
+    district: 'Pune',
+    lat: 18.5204,
+    lng: 73.8567,
+    totalInspections: 48,
+    violationsCount: 14,
+    complianceRate: 71,
+    riskLevel: 'MEDIUM',
+    riskScore: 62,
+    recentFlaggedBrand: 'Priya Foods (Chilli Powder)'
+  },
+  {
+    id: 'geo-delhi',
+    name: 'Okhla Industrial Estate & Azadpur Mandi',
+    state: 'Delhi',
+    district: 'Central Delhi',
+    lat: 28.6139,
+    lng: 77.2090,
+    totalInspections: 62,
+    violationsCount: 28,
+    complianceRate: 55,
+    riskLevel: 'HIGH',
+    riskScore: 84,
+    recentFlaggedBrand: 'Royal Beverages (Mineral Water)'
+  },
+  {
+    id: 'geo-bengaluru',
+    name: 'Peenya Industrial Complex & Yeshwanthpur',
+    state: 'Karnataka',
+    district: 'Bengaluru Urban',
+    lat: 12.9716,
+    lng: 77.5946,
+    totalInspections: 36,
+    violationsCount: 6,
+    complianceRate: 83,
+    riskLevel: 'LOW',
+    riskScore: 24,
+    recentFlaggedBrand: 'Sunstar Agro Ltd'
+  },
+  {
+    id: 'geo-ahmedabad',
+    name: 'Sanand GIDC & Naroda Industrial Area',
+    state: 'Gujarat',
+    district: 'Ahmedabad',
+    lat: 23.0225,
+    lng: 72.5714,
+    totalInspections: 41,
+    violationsCount: 18,
+    complianceRate: 56,
+    riskLevel: 'HIGH',
+    riskScore: 78,
+    recentFlaggedBrand: 'Delta Snacks Pvt Ltd'
+  },
+  {
+    id: 'geo-chennai',
+    name: 'Ambattur Industrial Estate & Koyambedu',
+    state: 'Tamil Nadu',
+    district: 'Chennai',
+    lat: 13.0827,
+    lng: 80.2707,
+    totalInspections: 29,
+    violationsCount: 7,
+    complianceRate: 76,
+    riskLevel: 'MEDIUM',
+    riskScore: 45,
+    recentFlaggedBrand: 'Apex Dairy Products'
+  }
+];
+
+const mockEnforcementCases: EnforcementCase[] = [
+  {
+    id: 'case-101',
+    caseNumber: 'CASE/2026/DL/0084',
+    inspectionId: 'insp-sample-02',
+    title: 'Non-declaration of MRP & Missing Date of Mfg under Section 36',
+    manufacturerName: 'Royal Beverages Bottling Plant',
+    category: 'Packaged Drinking Water',
+    status: 'HEARING_SCHEDULED',
+    priority: 'HIGH',
+    assignedInspectorId: 'usr-inspector-01',
+    assignedInspectorName: 'Inspector Amit Patel',
+    deadline: new Date(Date.now() + 5 * 24 * 3600000).toISOString(),
+    statutorySection: 'Section 36(1) of Legal Metrology Act, 2009',
+    noticesIssuedCount: 2,
+    notesCount: 3,
+    latestNote: 'Compounding hearing scheduled before Deputy Controller of Legal Metrology on 12th Sep.',
+    createdAt: new Date(Date.now() - 7 * 24 * 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 24 * 3600000).toISOString(),
+  },
+  {
+    id: 'case-102',
+    caseNumber: 'CASE/2026/MH/0112',
+    inspectionId: 'insp-sample-01',
+    title: 'Unit Sale Price font area discrepancy on 500g packages',
+    manufacturerName: 'Priya Foods Ltd',
+    category: 'Spices & Condiments',
+    status: 'NOTICE_PENDING',
+    priority: 'MEDIUM',
+    assignedInspectorId: 'usr-inspector-01',
+    assignedInspectorName: 'Inspector Amit Patel',
+    deadline: new Date(Date.now() + 12 * 24 * 3600000).toISOString(),
+    statutorySection: 'Rule 6(1)(e) Second Proviso PCR 2011',
+    noticesIssuedCount: 1,
+    notesCount: 2,
+    latestNote: 'Statutory rectification notice draft prepared for supervisory endorsement.',
+    createdAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 12 * 3600000).toISOString(),
+  },
+  {
+    id: 'case-103',
+    caseNumber: 'CASE/2026/GJ/0049',
+    inspectionId: 'insp-sample-04',
+    title: 'Absence of Complete Manufacturer Address & Pin Code on Snack Pouches',
+    manufacturerName: 'Delta Snacks & Confectionery Pvt Ltd',
+    category: 'Packaged Snacks & Chips',
+    status: 'RE_INSPECTION_ASSIGNED',
+    priority: 'HIGH',
+    assignedInspectorId: 'usr-inspector-02',
+    assignedInspectorName: 'Inspector Rajesh Sharma',
+    deadline: new Date(Date.now() + 3 * 24 * 3600000).toISOString(),
+    statutorySection: 'Rule 6(1)(a) PCR 2011',
+    noticesIssuedCount: 2,
+    notesCount: 4,
+    latestNote: 'Batch sampling and re-inspection assigned to North Gujarat field squad.',
+    createdAt: new Date(Date.now() - 14 * 24 * 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 48 * 3600000).toISOString(),
+  },
+  {
+    id: 'case-104',
+    caseNumber: 'CASE/2026/KA/0023',
+    inspectionId: 'insp-sample-03',
+    title: 'Verification of Consumer Care email domain rectification',
+    manufacturerName: 'Sunstar Agro Ltd',
+    category: 'Edible Oils & Fats',
+    status: 'RESOLVED_COMPLIANT',
+    priority: 'LOW',
+    assignedInspectorId: 'usr-inspector-01',
+    assignedInspectorName: 'Inspector Amit Patel',
+    deadline: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
+    statutorySection: 'Rule 6(1)(g) PCR 2011',
+    noticesIssuedCount: 1,
+    notesCount: 2,
+    latestNote: 'Revised packaging artwork v2.0 inspected and verified compliant.',
+    createdAt: new Date(Date.now() - 30 * 24 * 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
+  }
+];
+
+const mockInspectNextQueue: InspectNextItem[] = [
+  {
+    id: 'queue-01',
+    productName: 'Royal Aqua Mineral Water 500ml & 1L Bottles',
+    manufacturerName: 'Royal Beverages Bottling Plant',
+    category: 'Packaged Drinking Water',
+    location: 'Okhla Industrial Area, Phase II, Delhi',
+    riskScore: 89,
+    riskBand: 'HIGH',
+    confidence: 0.94,
+    dataSufficiency: 'SUFFICIENT',
+    historicalAuditsCount: 14,
+    riskFactors: [
+      { factor: 'Habitual Recidivism', impactScore: 38, direction: 'INCREASE', description: '4 previous compounding penalties in past 90 days' },
+      { factor: 'Category Non-Compliance Baseline', impactScore: 24, direction: 'INCREASE', description: 'Packaged water category exhibits 41.2% regional defect rate' },
+      { factor: 'Missing Date Code Anomaly', impactScore: 18, direction: 'INCREASE', description: 'Batch code printer misalignment detected on field surveillance' },
+      { factor: 'Inspector Verification Weight', impactScore: 9, direction: 'INCREASE', description: 'High probability of Rule 6(1)(e) MRP omission' }
+    ],
+    suggestedAction: 'Dispatch Immediate On-Site Surprise Audit & Sample Seizure',
+    priorityRank: 1
+  },
+  {
+    id: 'queue-02',
+    productName: 'Delta Crispy Potato Wafers 100g (Family Pack)',
+    manufacturerName: 'Delta Snacks & Confectionery Pvt Ltd',
+    category: 'Packaged Snacks & Chips',
+    location: 'Sanand GIDC, Ahmedabad, Gujarat',
+    riskScore: 78,
+    riskBand: 'HIGH',
+    confidence: 0.88,
+    dataSufficiency: 'SUFFICIENT',
+    historicalAuditsCount: 11,
+    riskFactors: [
+      { factor: 'Manufacturer Address Incomplete', impactScore: 32, direction: 'INCREASE', description: 'Omission of PIN code & street details in 7 of 11 audits' },
+      { factor: 'Net Quantity Font Area', impactScore: 26, direction: 'INCREASE', description: 'Font area 2.1mm vs mandatory 4.0mm under Table 1 PCR 2011' },
+      { factor: 'Recent Packaging Revision', impactScore: 20, direction: 'INCREASE', description: 'Artwork modified without DoCA pre-compliance screening' }
+    ],
+    suggestedAction: 'Issue Prioritized Re-Inspection Order with Table 1 Font Gage',
+    priorityRank: 2
+  },
+  {
+    id: 'queue-03',
+    productName: 'Priya Foods Turmeric & Garam Masala 250g',
+    manufacturerName: 'Priya Foods Ltd',
+    category: 'Spices & Condiments',
+    location: 'Hadapsar Industrial Estate, Pune, Maharashtra',
+    riskScore: 56,
+    riskBand: 'MEDIUM',
+    confidence: 0.91,
+    dataSufficiency: 'SUFFICIENT',
+    historicalAuditsCount: 18,
+    riskFactors: [
+      { factor: 'Unit Sale Price Calculation', impactScore: 28, direction: 'INCREASE', description: 'USP decimal rounding inconsistency on 250g SKUs' },
+      { factor: 'Established Manufacturer Mitigation', impactScore: -12, direction: 'DECREASE', description: 'Prompt compliance on past notice compounding' }
+    ],
+    suggestedAction: 'Schedule Routine Surveillance Inspection in Next Fortnight',
+    priorityRank: 3
+  },
+  {
+    id: 'queue-04',
+    productName: 'Apex Fresh Full Cream Milk 500ml Pouch',
+    manufacturerName: 'Apex Dairy & Agro Products',
+    category: 'Dairy Products',
+    location: 'Ambattur Industrial Area, Chennai, Tamil Nadu',
+    riskScore: 44,
+    riskBand: 'MEDIUM',
+    confidence: 0.72,
+    dataSufficiency: 'MODERATE',
+    historicalAuditsCount: 8,
+    riskFactors: [
+      { factor: 'Cold Start / Moderate Data', impactScore: 22, direction: 'INCREASE', description: 'Limited regional audit history in past 6 months' },
+      { factor: 'Perishable Expiry Labelling', impactScore: 18, direction: 'INCREASE', description: 'Use-by date format verification required under Rule 6(1)(d)' }
+    ],
+    suggestedAction: 'Standard Field Audit Queue',
+    priorityRank: 4
+  }
+];
+
+const mockManufacturerProducts: ManufacturerProduct[] = [
+  {
+    id: 'prod-001',
+    sku: 'SKU-PF-CHILLI-500G',
+    name: 'Priya Foods Premium Chilli Powder 500g',
+    brand: 'Priya Foods',
+    category: 'Spices & Condiments',
+    netQuantity: '500 g',
+    mrp: '₹140.00',
+    packagingType: 'Stand-up Foil Pouch with Zip',
+    currentArtworkVersion: 'v2.1',
+    complianceStatus: 'FLAGGED',
+    lastScanScore: 82,
+    artworks: [
+      {
+        id: 'art-001',
+        productId: 'prod-001',
+        version: 'v2.1',
+        status: 'NEEDS_REMEDIATION',
+        imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
+        packageSide: 'BACK',
+        dimensions: '180 x 240 mm',
+        dpi: 300,
+        changeSummary: 'Adjusted MRP format; unit sale price font area needs expansion to 4.0mm.',
+        uploadedAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
+        uploadedBy: 'Priya Packaging QA'
+      },
+      {
+        id: 'art-002',
+        productId: 'prod-001',
+        version: 'v2.0',
+        status: 'APPROVED_FOR_PRINT',
+        imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+        packageSide: 'PDP',
+        dimensions: '180 x 240 mm',
+        dpi: 300,
+        changeSummary: 'Original batch artwork layout.',
+        uploadedAt: new Date(Date.now() - 45 * 24 * 3600000).toISOString(),
+        uploadedBy: 'Priya Packaging QA'
+      }
+    ],
+    createdAt: new Date(Date.now() - 60 * 24 * 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 2 * 24 * 3600000).toISOString(),
+  },
+  {
+    id: 'prod-002',
+    sku: 'SKU-PF-TURMERIC-250G',
+    name: 'Priya Foods Pure Turmeric Powder 250g',
+    brand: 'Priya Foods',
+    category: 'Spices & Condiments',
+    netQuantity: '250 g',
+    mrp: '₹75.00',
+    packagingType: 'Laminated Flexible Pouch',
+    currentArtworkVersion: 'v1.4',
+    complianceStatus: 'COMPLIANT',
+    lastScanScore: 98,
+    artworks: [
+      {
+        id: 'art-003',
+        productId: 'prod-002',
+        version: 'v1.4',
+        status: 'APPROVED_FOR_PRINT',
+        imageUrl: 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&auto=format&fit=crop&q=60',
+        packageSide: 'PDP',
+        dimensions: '140 x 190 mm',
+        dpi: 300,
+        changeSummary: 'Verified compliant with all 7 Rule 6 mandatory declarations.',
+        uploadedAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
+        uploadedBy: 'Priya Packaging QA'
+      }
+    ],
+    createdAt: new Date(Date.now() - 90 * 24 * 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
+  },
+  {
+    id: 'prod-003',
+    sku: 'SKU-PF-GARAM-MASALA-100G',
+    name: 'Priya Foods Royal Garam Masala 100g Box',
+    brand: 'Priya Foods',
+    category: 'Spices & Condiments',
+    netQuantity: '100 g',
+    mrp: '₹68.00',
+    packagingType: 'Duplex Paper Carton',
+    currentArtworkVersion: 'v1.0',
+    complianceStatus: 'PENDING_SCAN',
+    lastScanScore: undefined,
+    artworks: [
+      {
+        id: 'art-004',
+        productId: 'prod-003',
+        version: 'v1.0',
+        status: 'DRAFT',
+        imageUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
+        packageSide: 'ALL_SIDES',
+        dimensions: '80 x 120 x 40 mm',
+        dpi: 300,
+        changeSummary: 'New carton flat artwork draft for upcoming festive production batch.',
+        uploadedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
+        uploadedBy: 'Creative Design Studio'
+      }
+    ],
+    createdAt: new Date(Date.now() - 10 * 24 * 3600000).toISOString(),
+    updatedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
   }
 ];

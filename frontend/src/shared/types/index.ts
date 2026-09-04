@@ -196,3 +196,113 @@ export interface CategoryPattern {
   violationRate: number;
   topViolation: string;
 }
+
+// F31: Geographic Risk Visualization
+export interface GeoRiskLocation {
+  id: string;
+  name: string;
+  state: string;
+  district: string;
+  lat: number;
+  lng: number;
+  totalInspections: number;
+  violationsCount: number;
+  complianceRate: number;
+  riskLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  riskScore: number;
+  recentFlaggedBrand?: string;
+}
+
+// F32: Cases, Follow-Ups & Assignment Workflow
+export type FollowUpStatus = 
+  | 'NOTICE_PENDING' 
+  | 'HEARING_SCHEDULED' 
+  | 'RE_INSPECTION_ASSIGNED' 
+  | 'RESOLVED_COMPLIANT' 
+  | 'ESCALATED_PROSECUTION';
+
+export interface EnforcementCase {
+  id: string;
+  caseNumber: string;
+  inspectionId: string;
+  title: string;
+  manufacturerName: string;
+  category: string;
+  status: FollowUpStatus;
+  priority: 'HIGH' | 'MEDIUM' | 'LOW';
+  assignedInspectorId: string;
+  assignedInspectorName: string;
+  deadline: string;
+  statutorySection: string;
+  noticesIssuedCount: number;
+  notesCount: number;
+  latestNote?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// F33: Risk Dashboard & Inspect-Next Queue
+export interface RiskFactor {
+  factor: string;
+  impactScore: number;
+  direction: 'INCREASE' | 'DECREASE';
+  description: string;
+}
+
+export interface InspectNextItem {
+  id: string;
+  productName: string;
+  manufacturerName: string;
+  category: string;
+  location: string;
+  riskScore: number; // 0 - 100
+  riskBand: 'HIGH' | 'MEDIUM' | 'LOW';
+  confidence: number;
+  dataSufficiency: 'SUFFICIENT' | 'MODERATE' | 'SPARSE';
+  historicalAuditsCount: number;
+  riskFactors: RiskFactor[];
+  suggestedAction: string;
+  priorityRank: number;
+}
+
+// F34 & F35: Manufacturer Portal & Product Library
+export interface ManufacturerKPIs {
+  totalProducts: number;
+  compliantProducts: number;
+  flaggedProducts: number;
+  overallComplianceRate: number;
+  pendingRemediations: number;
+  activeArtworks: number;
+  lastSelfScanDate: string;
+}
+
+export interface ArtworkVersion {
+  id: string;
+  productId: string;
+  version: string;
+  status: 'APPROVED_FOR_PRINT' | 'NEEDS_REMEDIATION' | 'DRAFT' | 'REJECTED';
+  imageUrl: string;
+  packageSide: 'FRONT' | 'BACK' | 'PDP' | 'TOP' | 'ALL_SIDES';
+  dimensions: string;
+  dpi: number;
+  changeSummary: string;
+  uploadedAt: string;
+  uploadedBy: string;
+}
+
+export interface ManufacturerProduct {
+  id: string;
+  sku: string;
+  name: string;
+  brand: string;
+  category: string;
+  netQuantity: string;
+  mrp: string;
+  packagingType: string;
+  currentArtworkVersion: string;
+  complianceStatus: 'COMPLIANT' | 'FLAGGED' | 'PENDING_SCAN';
+  artworks: ArtworkVersion[];
+  lastScanScore?: number;
+  createdAt: string;
+  updatedAt: string;
+}

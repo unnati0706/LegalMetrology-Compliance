@@ -11,7 +11,12 @@ import {
   Archive,
   Shield,
   BarChart3,
-  Network
+  Network,
+  Map,
+  Briefcase,
+  Sparkles,
+  Building2,
+  Package
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -25,6 +30,11 @@ export const Sidebar: React.FC = () => {
     { to: '/enforcement/dashboard', label: 'Enforcement KPIs', icon: <Shield size={18} />, module: 'F28' },
     { to: '/enforcement/analytics', label: 'Violation Analytics', icon: <BarChart3 size={18} />, module: 'F29' },
     { to: '/enforcement/patterns', label: 'Recidivism Patterns', icon: <Network size={18} />, module: 'F30' },
+    { to: '/enforcement/map', label: 'Geographic Risk Map', icon: <Map size={18} />, module: 'F31' },
+    { to: '/enforcement/cases', label: 'Cases & Assignments', icon: <Briefcase size={18} />, module: 'F32' },
+    { to: '/enforcement/inspect-next', label: 'Inspect-Next Queue', icon: <Sparkles size={18} />, module: 'F33' },
+    { to: '/manufacturer/dashboard', label: 'Manufacturer Portal', icon: <Building2 size={18} />, module: 'F34' },
+    { to: '/manufacturer/products', label: 'Product & Artwork Library', icon: <Package size={18} />, module: 'F35' },
   ];
 
   return (
