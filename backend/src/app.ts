@@ -19,6 +19,11 @@ import b12Routes from './modules/b12/b12.routes';
 import b13Routes from './modules/b13/b13.routes';
 import b14Routes from './modules/b14/b14.routes';
 import b15Routes from './modules/b15/b15.routes';
+import b16Routes from './modules/b16/b16.routes';
+import b17Routes from './modules/b17/b17.routes';
+import b18Routes from './modules/b18/b18.routes';
+import b19Routes from './modules/b19/b19.routes';
+import b20Routes from './modules/b20/b20.routes';
 
 const app = express();
 
@@ -55,6 +60,11 @@ app.use('/api/v1/b12', b12Routes);
 app.use('/api/v1/b13', b13Routes);
 app.use('/api/v1/b14', b14Routes);
 app.use('/api/v1/b15', b15Routes);
+app.use('/api/v1/b16', b16Routes);
+app.use('/api/v1/b17', b17Routes);
+app.use('/api/v1/b18', b18Routes);
+app.use('/api/v1/b19', b19Routes);
+app.use('/api/v1/b20', b20Routes);
 
 // Audit Logs Endpoint (Admin/Supervisor)
 app.get('/api/v1/audit-logs', (req, res) => {
