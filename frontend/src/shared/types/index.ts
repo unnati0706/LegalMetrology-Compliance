@@ -428,3 +428,100 @@ export interface ApplicableRule {
   applicableCommodities?: string[];
 }
 
+// F16: Declaration Completeness
+export interface CompletenessItem {
+  field: string;
+  label: string;
+  legalClause: string;
+  isRequired: boolean;
+  status: 'PRESENT' | 'MISSING' | 'DEFECTIVE' | 'EXEMPT';
+  extractedValue?: string;
+  formatCompliant: boolean;
+  formatRemarks?: string;
+}
+
+// F17: MRP & Net Quantity Validation
+export interface MRPValidationResult {
+  declaredMRP: string;
+  numericMRP: number;
+  hasTaxInclusionText: boolean;
+  hasRupeeSymbol: boolean;
+  declaredUSP?: string;
+  calculatedUSP?: string;
+  isUSPMandatory: boolean;
+  isUSPCompliant: boolean;
+  status: 'COMPLIANT' | 'FLAGGED';
+  remarks: string[];
+}
+
+export interface NetQuantityValidationResult {
+  declaredQuantity: string;
+  numericValue: number;
+  unit: string;
+  isStandardUnit: boolean;
+  isScheduleIICompliant: boolean;
+  maxPermissibleErrorPercentage?: number;
+  status: 'COMPLIANT' | 'FLAGGED';
+  remarks: string[];
+}
+
+// F18: Entity & Consumer Care
+export interface EntityDeclarationDetails {
+  type: 'MANUFACTURER' | 'PACKER' | 'IMPORTER';
+  legalName: string;
+  completeAddress: string;
+  hasPinCode: boolean;
+  pinCode?: string;
+  countryOfOrigin?: string;
+  status: 'COMPLIANT' | 'DEFECTIVE';
+  remarks: string[];
+}
+
+export interface ConsumerCareDetails {
+  officerNameOrDesignation: string;
+  contactNumber: string;
+  isTollFreeOrValidPhone: boolean;
+  emailAddress: string;
+  isEmailValid: boolean;
+  postalAddress: string;
+  status: 'COMPLIANT' | 'DEFECTIVE';
+  remarks: string[];
+}
+
+// F19: Date & Readability
+export interface DateDeclarationDetails {
+  dateType: 'MFG' | 'PKD' | 'IMPORT' | 'EXPIRY' | 'BEST_BEFORE';
+  declaredDateString: string;
+  month: number;
+  year: number;
+  isFutureDate: boolean;
+  isFormatCompliant: boolean;
+  status: 'COMPLIANT' | 'FLAGGED';
+}
+
+export interface ReadabilityMetrics {
+  numeralHeightMm: number;
+  requiredMinHeightMm: number;
+  isHeightCompliant: boolean;
+  pdpAreaCm2: number;
+  contrastRatio: number;
+  isContrastCompliant: boolean;
+  lightingGlareScore: number;
+}
+
+// F20: Explainable Findings
+export interface ExplainableRuleFinding {
+  ruleCode: string;
+  ruleTitle: string;
+  statutoryClause: string;
+  verdict: 'PASS' | 'FLAG' | 'MANUAL_REVIEW';
+  verdictSummary: string;
+  detailedLogic: string[];
+  statutoryText: string;
+  compoundingPenalty: string;
+  evidenceReference?: string;
+  packageSide?: string;
+  remediationAdvice: string;
+}
+
+

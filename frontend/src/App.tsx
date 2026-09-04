@@ -27,6 +27,13 @@ import { RulesPage } from './modules/f13/RulesPage.js';
 import { ResultsPage } from './modules/f14/ResultsPage.js';
 import { EvidencePage } from './modules/f15/EvidencePage.js';
 
+// Specific Compliance Checks & Explainability F16 - F20
+import { CompletenessPage } from './modules/f16/CompletenessPage.js';
+import { MRPQuantityValidationPage } from './modules/f17/MRPQuantityValidationPage.js';
+import { EntityConsumerCarePage } from './modules/f18/EntityConsumerCarePage.js';
+import { DatesReadabilityPage } from './modules/f19/DatesReadabilityPage.js';
+import { ExplainableFindingsPage } from './modules/f20/ExplainableFindingsPage.js';
+
 // Module Pages F21 - F25
 
 
@@ -91,6 +98,13 @@ export const App: React.FC = () => {
                     <Route path="/inspections/:id/rules" element={<RulesPage />} />
                     <Route path="/inspections/:id/results" element={<ResultsPage />} />
                     <Route path="/inspections/:id/evidence" element={<EvidencePage />} />
+
+                    {/* F16 - F20: Specific Compliance & Explainability */}
+                    <Route path="/inspections/:id/completeness" element={<CompletenessPage />} />
+                    <Route path="/inspections/:id/mrp-quantity" element={<MRPQuantityValidationPage />} />
+                    <Route path="/inspections/:id/entity-care" element={<EntityConsumerCarePage />} />
+                    <Route path="/inspections/:id/dates-readability" element={<DatesReadabilityPage />} />
+                    <Route path="/inspections/:id/explain" element={<ExplainableFindingsPage />} />
 
                     {/* F02: Authentication & RBAC */}
                     <Route path="/login" element={<LoginPage />} />
