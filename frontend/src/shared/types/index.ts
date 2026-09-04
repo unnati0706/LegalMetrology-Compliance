@@ -306,3 +306,109 @@ export interface ManufacturerProduct {
   createdAt: string;
   updatedAt: string;
 }
+
+// F36: Pre-Compliance Scan & Remediation Checklist
+export interface RemediationItem {
+  id: string;
+  ruleCode?: string;
+  title?: string;
+  field?: string;
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
+  status: 'FAIL' | 'PASS' | 'WARNING';
+  currentText?: string;
+  currentValue?: string;
+  requiredText?: string;
+  guidance?: string;
+  suggestedFix?: string;
+  legalRef: string;
+  isResolved?: boolean;
+}
+
+
+// F37: Before/After Comparison & Rescan
+export interface ArtworkDiffChange {
+  field: string;
+  before: string;
+  after: string;
+  status: 'RESOLVED' | 'UNRESOLVED' | 'NEW';
+  legalRule: string;
+}
+
+export interface ArtworkDiffResult {
+  productId: string;
+  oldVersion: string;
+  newVersion: string;
+  oldScore: number;
+  newScore: number;
+  resolvedIssuesCount: number;
+  remainingIssuesCount: number;
+  changes: ArtworkDiffChange[];
+  rescanDate: string;
+}
+
+// F38: Offline Inspection Queue & Sync Status
+export interface OfflineQueueItem {
+  id: string;
+  inspectionId: string;
+  productName: string;
+  manufacturerName: string;
+  packageSidesCaptured: string[];
+  evidenceCount: number;
+  localSize: string;
+  capturedAt: string;
+  syncStatus: 'PENDING_SYNC' | 'SYNCING' | 'SYNCED' | 'CONFLICT';
+  hasConflict?: boolean;
+  conflictDetails?: {
+    serverVersionDate: string;
+    serverInspector: string;
+    fieldDifferences: string[];
+  };
+}
+
+// F39: Explainable Evidence Mode & Inspection Timeline
+export interface WalkthroughStep {
+  stepNumber: number;
+  title: string;
+  subtitle: string;
+  evidenceUrl: string;
+  boundingBox?: BoundingBox;
+  extractedText: string;
+  ruleCode: string;
+  verdict: 'PASS' | 'VIOLATION' | 'MANUAL_REVIEW';
+  explanation: string;
+  legalClause: string;
+}
+
+export interface TimelineEvent {
+  id: string;
+  inspectionId: string;
+  timestamp: string;
+  actorName: string;
+  actorRole: string;
+  eventType: 'CAPTURE' | 'OCR_EXTRACT' | 'RULE_EVALUATE' | 'OVERRIDE' | 'NOTICE_ISSUED' | 'SEALED';
+  title: string;
+  description: string;
+  sha256Hash: string;
+}
+
+// F40: Smart Report & Scan Quality Coach
+export interface SmartReportNarrative {
+  inspectionId: string;
+  productName: string;
+  executiveSummary: string;
+  compoundingPenaltyEstimate: string;
+  keyFindings: string[];
+  recommendedDirectives: string[];
+  legalRiskAssessment: string;
+  generatedAt: string;
+}
+
+export interface ScanQualityMetrics {
+  overallQuality: number; // 0 - 100
+  glareScore: number; // 0 - 100
+  lightingScore: number; // 0 - 100
+  skewAngle: number; // in degrees
+  focusScore: number; // 0 - 100
+  isCourtroomReady: boolean;
+  coachingTips: string[];
+}

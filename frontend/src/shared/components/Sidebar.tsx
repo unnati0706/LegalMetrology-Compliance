@@ -16,7 +16,10 @@ import {
   Briefcase,
   Sparkles,
   Building2,
-  Package
+  Package,
+  HardDriveDownload,
+  ShieldCheck,
+  GitCompare
 } from 'lucide-react';
 
 export const Sidebar: React.FC = () => {
@@ -27,6 +30,8 @@ export const Sidebar: React.FC = () => {
     { to: '/notes', label: 'Inspector Notes', icon: <FileText size={18} />, module: 'F23' },
     { to: '/finalize', label: 'Finalization & Sign-off', icon: <Lock size={18} />, module: 'F24' },
     { to: '/reports', label: 'Report Vault & Export', icon: <FileSpreadsheet size={18} />, module: 'F26/27' },
+    { to: '/inspections/offline-queue', label: 'Offline Sync Queue', icon: <HardDriveDownload size={18} />, module: 'F38' },
+    { to: '/inspections/insp-sample-01/explainable-evidence', label: 'Explainable AI & Audit', icon: <Sparkles size={18} />, module: 'F39/40' },
     { to: '/enforcement/dashboard', label: 'Enforcement KPIs', icon: <Shield size={18} />, module: 'F28' },
     { to: '/enforcement/analytics', label: 'Violation Analytics', icon: <BarChart3 size={18} />, module: 'F29' },
     { to: '/enforcement/patterns', label: 'Recidivism Patterns', icon: <Network size={18} />, module: 'F30' },
@@ -35,7 +40,9 @@ export const Sidebar: React.FC = () => {
     { to: '/enforcement/inspect-next', label: 'Inspect-Next Queue', icon: <Sparkles size={18} />, module: 'F33' },
     { to: '/manufacturer/dashboard', label: 'Manufacturer Portal', icon: <Building2 size={18} />, module: 'F34' },
     { to: '/manufacturer/products', label: 'Product & Artwork Library', icon: <Package size={18} />, module: 'F35' },
+    { to: '/manufacturer/products/prod-001/scan', label: 'Pre-Compliance & Diff', icon: <ShieldCheck size={18} />, module: 'F36/37' },
   ];
+
 
   return (
     <aside style={{

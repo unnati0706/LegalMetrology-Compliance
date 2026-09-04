@@ -25,6 +25,15 @@ import { InspectNextPage } from './modules/f33/InspectNextPage.js';
 import { ManufacturerDashboardPage } from './modules/f34/ManufacturerDashboardPage.js';
 import { ProductLibraryPage } from './modules/f35/ProductLibraryPage.js';
 
+// Module Pages F36 - F40
+import { PreComplianceScanPage } from './modules/f36/PreComplianceScanPage.js';
+import { BeforeAfterRescanPage } from './modules/f37/BeforeAfterRescanPage.js';
+import { ProductComplianceHistoryPage } from './modules/f37/ProductComplianceHistoryPage.js';
+import { OfflineQueuePage } from './modules/f38/OfflineQueuePage.js';
+import { ExplainableEvidencePage } from './modules/f39/ExplainableEvidencePage.js';
+import { InspectionTimelinePage } from './modules/f39/InspectionTimelinePage.js';
+import { SmartReportPage } from './modules/f40/SmartReportPage.js';
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -87,6 +96,23 @@ export const App: React.FC = () => {
             <Route path="/manufacturer/products" element={<ProductLibraryPage />} />
             <Route path="/manufacturer/products/:id" element={<ProductLibraryPage />} />
 
+            {/* F36: Manufacturer Pre-Compliance Scan & Remediation Checklist */}
+            <Route path="/manufacturer/products/:id/scan" element={<PreComplianceScanPage />} />
+
+            {/* F37: Before/After Comparison & Rescan */}
+            <Route path="/manufacturer/products/:id/rescan" element={<BeforeAfterRescanPage />} />
+            <Route path="/manufacturer/products/:id/history" element={<ProductComplianceHistoryPage />} />
+
+            {/* F38: Offline Inspection Queue & Sync Status */}
+            <Route path="/inspections/offline-queue" element={<OfflineQueuePage />} />
+
+            {/* F39: Explainable Evidence Mode & Inspection Timeline */}
+            <Route path="/inspections/:id/explainable-evidence" element={<ExplainableEvidencePage />} />
+            <Route path="/inspections/:id/timeline" element={<InspectionTimelinePage />} />
+
+            {/* F40: Smart Report & Scan Quality Coach */}
+            <Route path="/inspections/:id/smart-report" element={<SmartReportPage />} />
+
             {/* Fallback */}
             <Route path="*" element={<Navigate to="/inspections" replace />} />
           </Routes>
@@ -97,3 +123,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

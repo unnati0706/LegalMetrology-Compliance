@@ -19,7 +19,14 @@ import {
   ManufacturerKPIs,
   ManufacturerProduct,
   ArtworkVersion,
-  FollowUpStatus
+  FollowUpStatus,
+  RemediationItem,
+  ArtworkDiffResult,
+  OfflineQueueItem,
+  WalkthroughStep,
+  TimelineEvent,
+  SmartReportNarrative,
+  ScanQualityMetrics
 } from '../types/index.js';
 
 // Initial Mock Seed Data for instant interactive fidelity and standalone testing
@@ -627,6 +634,251 @@ export const apiClient = {
     product.currentArtworkVersion = newVersion.version;
     product.updatedAt = new Date().toISOString();
     return newVersion;
+  },
+
+  // Manufacturer Pre-Compliance Scan & Remediation Checklist (F36)
+  runPreComplianceScan: async (productId: string, artworkId?: string): Promise<{
+    score: number;
+    status: 'COMPLIANT' | 'FLAGGED';
+    remediations: RemediationItem[];
+  }> => {
+    const product = mockManufacturerProducts.find(p => p.id === productId);
+    if (!product) throw new Error(`Product ${productId} not found`);
+
+    const items = mockRemediationData[productId] || mockRemediationData['default'];
+    const hasFail = items.some(i => i.status === 'FAIL' && !i.isResolved);
+    const score = hasFail ? 78 : 98;
+    const status = hasFail ? 'FLAGGED' : 'COMPLIANT';
+
+    product.lastScanScore = score;
+    product.complianceStatus = status;
+    product.updatedAt = new Date().toISOString();
+
+    return { score, status, remediations: items };
+  },
+
+  getRemediationItems: async (productId: string): Promise<RemediationItem[]> => {
+    return mockRemediationData[productId] || mockRemediationData['default'];
+  },
+
+  toggleRemediationItemResolved: async (productId: string, itemId: string): Promise<RemediationItem> => {
+    const list = mockRemediationData[productId] || mockRemediationData['default'];
+    const item = list.find(i => i.id === itemId);
+    if (!item) throw new Error(`Remediation item ${itemId} not found`);
+    item.isResolved = !item.isResolved;
+    return item;
+  },
+
+  // Before/After Comparison & Rescan (F37)
+  getArtworkDiffComparison: async (productId: string, oldVer?: string, newVer?: string): Promise<ArtworkDiffResult> => {
+    return {
+      productId,
+      oldVersion: oldVer || 'v2.0',
+      newVersion: newVer || 'v2.1',
+      oldScore: 68,
+      newScore: 96,
+      resolvedIssuesCount: 2,
+      remainingIssuesCount: 0,
+      rescanDate: new Date().toISOString(),
+      changes: [
+        {
+          field: 'Unit Sale Price Font Area',
+          before: '₹0.28 / g (Font height 2.2mm)',
+          after: '₹0.28 / g (Font height 4.2mm - Table 1 Compliant)',
+          status: 'RESOLVED',
+          legalRule: 'Rule 6(1)(e) Second Proviso PCR 2011'
+        },
+        {
+          field: 'Consumer Care Cell Details',
+          before: 'care@priyafoods.in (Missing Toll-Free)',
+          after: 'care@priyafoods.in, Toll-Free: 1800-200-1122',
+          status: 'RESOLVED',
+          legalRule: 'Rule 6(1)(g) PCR 2011'
+        }
+      ]
+    };
+  },
+
+  runRescanComparison: async (productId: string, newVersion: string): Promise<ArtworkDiffResult> => {
+    const res = await apiClient.getArtworkDiffComparison(productId, 'v2.0', newVersion);
+    const prod = mockManufacturerProducts.find(p => p.id === productId);
+    if (prod) {
+      prod.complianceStatus = 'COMPLIANT';
+      prod.lastScanScore = 96;
+      prod.currentArtworkVersion = newVersion;
+    }
+    return res;
+  },
+
+  // Offline Inspection Queue & Sync Status (F38)
+  getOfflineQueue: async (): Promise<OfflineQueueItem[]> => {
+    return [...mockOfflineQueue];
+  },
+
+  syncOfflineItem: async (itemId: string): Promise<OfflineQueueItem> => {
+    const item = mockOfflineQueue.find(i => i.id === itemId);
+    if (!item) throw new Error(`Offline item ${itemId} not found`);
+    item.syncStatus = 'SYNCED';
+    return item;
+  },
+
+  resolveOfflineConflict: async (itemId: string, strategy: 'SERVER_WINS' | 'LOCAL_WINS'): Promise<OfflineQueueItem> => {
+    const item = mockOfflineQueue.find(i => i.id === itemId);
+    if (!item) throw new Error(`Offline item ${itemId} not found`);
+    item.syncStatus = 'SYNCED';
+    item.hasConflict = false;
+    return item;
+  },
+
+  // Explainable Evidence Mode & Inspection Timeline (F39)
+  getExplainableEvidenceWalkthrough: async (inspectionId: string): Promise<WalkthroughStep[]> => {
+    return [
+      {
+        stepNumber: 1,
+        title: 'Step 1: Raw Field Capture & Cryptographic Hashing',
+        subtitle: 'High-resolution image captured by field inspector with SHA-256 seal.',
+        evidenceUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
+        extractedText: 'Raw visual tensor encoded at 4032x3024 300DPI.',
+        ruleCode: 'SEC-EVIDENCE-INTEGRITY',
+        verdict: 'PASS',
+        explanation: 'Image timestamp, GPS coordinates, and camera EXIF verified tamper-evident.',
+        legalClause: 'Section 15 of Legal Metrology Act, 2009 (Power of Inspection & Seizure)'
+      },
+      {
+        stepNumber: 2,
+        title: 'Step 2: Optical Recognition & Bounding Box Localization',
+        subtitle: 'Neural vision model locates Principal Display Panel (PDP) and Rule 6 declaration zones.',
+        evidenceUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+        boundingBox: { ymin: 0.65, xmin: 0.15, ymax: 0.72, xmax: 0.55 },
+        extractedText: 'MRP Rs 140.00 (INCL OF ALL TAXES)',
+        ruleCode: 'PCR-2011-R06-MRP',
+        verdict: 'PASS',
+        explanation: 'Bounding polygon detected with 96% confidence score in Back Panel lower quadrant.',
+        legalClause: 'Rule 6(1)(e) - Declaration of Maximum Retail Price inclusive of all taxes'
+      },
+      {
+        stepNumber: 3,
+        title: 'Step 3: Unit Sale Price Semantic Calculation & Proviso Check',
+        subtitle: 'Evaluating second proviso to Rule 6(1)(e) for packages above 100g/ml.',
+        evidenceUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+        boundingBox: { ymin: 0.73, xmin: 0.15, ymax: 0.79, xmax: 0.50 },
+        extractedText: 'USP: Rs 0.28 per g (Font area measured: 2.1mm)',
+        ruleCode: 'PCR-2011-R06-USP',
+        verdict: 'VIOLATION',
+        explanation: 'Statutory minimum font area for net quantity 500g is 4.0mm under Table 1. Detected font is 2.1mm.',
+        legalClause: 'Rule 6(1)(e) Second Proviso read with Rule 9 Table 1 PCR 2011'
+      },
+      {
+        stepNumber: 4,
+        title: 'Step 4: Statutory Legal Metrology Verdict & Citation',
+        subtitle: 'Compounding notice recommendation and statutory penalty determination.',
+        evidenceUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
+        extractedText: 'Non-compliant under Rule 6(1)(e) & Rule 9 Table 1.',
+        ruleCode: 'LMA-2009-SEC36',
+        verdict: 'VIOLATION',
+        explanation: 'Penalty compounding range under Section 36(1): Up to ₹25,000 for first offence.',
+        legalClause: 'Section 36(1) of Legal Metrology Act, 2009 (Penalty for Non-Standard Packages)'
+      }
+    ];
+  },
+
+  getInspectionTimeline: async (inspectionId: string): Promise<TimelineEvent[]> => {
+    return [
+      {
+        id: 'evt-01',
+        inspectionId,
+        timestamp: new Date(Date.now() - 2 * 3600000).toISOString(),
+        actorName: 'Inspector Amit Patel',
+        actorRole: 'INSPECTOR',
+        eventType: 'CAPTURE',
+        title: 'Field Visual Evidence Captured',
+        description: 'Captured 3 high-resolution package faces (PDP, Back, Top) with GPS lock.',
+        sha256Hash: '7d2a58b9f0c2e3914a8b8a92f8910a30b5e2849203a9856a911762cf12e09412'
+      },
+      {
+        id: 'evt-02',
+        inspectionId,
+        timestamp: new Date(Date.now() - 110 * 60000).toISOString(),
+        actorName: 'DoCA AI Vision Engine',
+        actorRole: 'AUTOMATED_SYSTEM',
+        eventType: 'OCR_EXTRACT',
+        title: 'Declarations Extracted & Localized',
+        description: 'Extracted 6 mandatory declarations (MRP, Net Qty, USP, Mfg Address, Date, Consumer Care).',
+        sha256Hash: '3f5b9c81e92d847156102a9b47e2a9b9102ef1904a8b7c6d5e4f3a2b1c0d9e8f'
+      },
+      {
+        id: 'evt-03',
+        inspectionId,
+        timestamp: new Date(Date.now() - 95 * 60000).toISOString(),
+        actorName: 'Statutory Rule Engine',
+        actorRole: 'AUTOMATED_SYSTEM',
+        eventType: 'RULE_EVALUATE',
+        title: 'Rule 6 & Rule 9 Evaluation Completed',
+        description: '1 Violation detected (Unit Sale Price font size under Table 1).',
+        sha256Hash: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b'
+      },
+      {
+        id: 'evt-04',
+        inspectionId,
+        timestamp: new Date(Date.now() - 30 * 60000).toISOString(),
+        actorName: 'Inspector Amit Patel',
+        actorRole: 'INSPECTOR',
+        eventType: 'OVERRIDE',
+        title: 'Manual Review Verdict Endorsed',
+        description: 'Inspector confirmed Rule 6(1)(e) font area violation and issued direction notice.',
+        sha256Hash: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+      },
+      {
+        id: 'evt-05',
+        inspectionId,
+        timestamp: new Date(Date.now() - 10 * 60000).toISOString(),
+        actorName: 'Legal Metrology Controller',
+        actorRole: 'SUPERVISOR',
+        eventType: 'SEALED',
+        title: 'Statutory Compliance Record Cryptographically Sealed',
+        description: 'Inspection record locked and filed to National Metrology Registry.',
+        sha256Hash: '4b227777d4dd1fc61c6f884f48641d02b4d121d3fd328cb08b5531fcacdabf8a'
+      }
+    ];
+  },
+
+  // Smart Report & Scan Quality Coach (F40)
+  getSmartReportNarrative: async (inspectionId: string): Promise<SmartReportNarrative> => {
+    return {
+      inspectionId,
+      productName: 'Priya Foods Premium Chilli Powder 500g',
+      executiveSummary: 'Statutory compliance inspection conducted under Legal Metrology Act, 2009. The subject packaged commodity satisfies 5 of 6 mandatory clauses under Rule 6(1) PCR 2011, but fails unit sale price typography specifications mandated under Rule 9 Table 1.',
+      compoundingPenaltyEstimate: '₹10,000 - ₹25,000 (Section 36(1) Compounding Ceiling)',
+      keyFindings: [
+        'MRP declaration is prominently displayed with statutory tax inclusion phrase.',
+        'Net quantity declaration (500g) conforms to maximum permissible variation limits under Second Schedule.',
+        'Unit Sale Price (₹0.28/g) font area is 2.1mm, violating minimum 4.0mm requirement for packages > 200g - 500g.',
+        'Manufacturer address and consumer care email verified active.'
+      ],
+      recommendedDirectives: [
+        'Issue statutory compounding rectification notice with 15-day compliance window.',
+        'Direct manufacturer to withdraw and over-sticker non-compliant inventory in trade channel.',
+        'Schedule priority re-inspection of corrected packaging batch within 30 days.'
+      ],
+      legalRiskAssessment: 'Medium Risk - Non-deceptive typographical defect rectifiable via standard compounding proceeding.',
+      generatedAt: new Date().toISOString()
+    };
+  },
+
+  getLiveScanQualityMetrics: async (): Promise<ScanQualityMetrics> => {
+    return {
+      overallQuality: 92,
+      glareScore: 94,
+      lightingScore: 90,
+      skewAngle: 1.8,
+      focusScore: 95,
+      isCourtroomReady: true,
+      coachingTips: [
+        'Excellent lighting and sharp declaration focus.',
+        'Skew angle is within optimal 2° threshold.',
+        'Principal display panel bounding area is 100% captured.'
+      ]
+    };
   }
 };
 
@@ -1143,3 +1395,118 @@ const mockManufacturerProducts: ManufacturerProduct[] = [
     updatedAt: new Date(Date.now() - 1 * 24 * 3600000).toISOString(),
   }
 ];
+
+const mockRemediationData: Record<string, RemediationItem[]> = {
+  'prod-001': [
+    {
+      id: 'rem-01',
+      field: 'Unit Sale Price Font Height',
+      severity: 'MAJOR',
+      currentValue: 'Font height measured 2.1mm on 500g package',
+      suggestedFix: 'Increase font size to minimum 4.0mm (or 3.0mm if area < 500 cm²) per Table 1 standards.',
+      legalRef: 'Rule 6(1)(e) Second Proviso read with Rule 9 Table 1 PCR 2011',
+      status: 'FAIL',
+      isResolved: false
+    },
+    {
+      id: 'rem-02',
+      field: 'Consumer Care Helpline Toll-Free Prefix',
+      severity: 'MINOR',
+      currentValue: 'care@priyafoods.in (Landline given without STD/Toll-Free indicator)',
+      suggestedFix: 'Include a dedicated 1800-series toll-free number or explicitly specify regional STD code.',
+      legalRef: 'Rule 6(1)(g) PCR 2011 (Consumer Care Mechanism)',
+      status: 'WARNING',
+      isResolved: false
+    },
+    {
+      id: 'rem-03',
+      field: 'Maximum Retail Price (MRP)',
+      severity: 'CRITICAL',
+      currentValue: '₹140.00 (INCL. OF ALL TAXES)',
+      suggestedFix: 'None required. Format satisfies mandatory tax inclusion wording.',
+      legalRef: 'Rule 6(1)(e) PCR 2011',
+      status: 'PASS',
+      isResolved: true
+    },
+    {
+      id: 'rem-04',
+      field: 'Net Quantity Specification',
+      severity: 'CRITICAL',
+      currentValue: '500 g (Symbol "g" lowercase)',
+      suggestedFix: 'None required. Correct standard SI symbol without full-stops or pluralization.',
+      legalRef: 'Rule 6(1)(b) & Second Schedule PCR 2011',
+      status: 'PASS',
+      isResolved: true
+    }
+  ],
+  default: [
+    {
+      id: 'rem-def-01',
+      field: 'Unit Sale Price Specification',
+      severity: 'MAJOR',
+      currentValue: '₹0.28 / g (Font height 2.2mm)',
+      suggestedFix: 'Expand typography to meet Table 1 mandatory minimum font area for net quantity bracket.',
+      legalRef: 'Rule 6(1)(e) Second Proviso PCR 2011',
+      status: 'FAIL',
+      isResolved: false
+    },
+    {
+      id: 'rem-def-02',
+      field: 'Consumer Redressal Email & Phone',
+      severity: 'MINOR',
+      currentValue: 'support@brand.com',
+      suggestedFix: 'Add direct consumer contact person / manager designation & toll-free telephone.',
+      legalRef: 'Rule 6(1)(g) PCR 2011',
+      status: 'WARNING',
+      isResolved: false
+    }
+  ]
+};
+
+const mockOfflineQueue: OfflineQueueItem[] = [
+  {
+    id: 'off-01',
+    inspectionId: 'insp-off-901',
+    productName: 'Priya Foods Premium Chilli Powder 500g',
+    manufacturerName: 'Priya Foods Ltd',
+    packageSidesCaptured: ['PDP', 'BACK', 'TOP'],
+    evidenceCount: 3,
+    localSize: '11.4 MB',
+    capturedAt: new Date(Date.now() - 45 * 60000).toISOString(),
+    syncStatus: 'PENDING_SYNC',
+    hasConflict: false
+  },
+  {
+    id: 'off-02',
+    inspectionId: 'insp-off-902',
+    productName: 'Royal Aqua Packaged Water 1L',
+    manufacturerName: 'Royal Beverages Bottling Plant',
+    packageSidesCaptured: ['FRONT', 'BARCODE'],
+    evidenceCount: 2,
+    localSize: '6.8 MB',
+    capturedAt: new Date(Date.now() - 120 * 60000).toISOString(),
+    syncStatus: 'CONFLICT',
+    hasConflict: true,
+    conflictDetails: {
+      serverVersionDate: new Date(Date.now() - 90 * 60000).toISOString(),
+      serverInspector: 'Inspector Rajesh Sharma (North Zone)',
+      fieldDifferences: [
+        'Server record already has disposition marked as NON_COMPLIANT with Notice #DL-8821.',
+        'Local capture contains additional Top cap batch code macro photos with alternative date stamp.'
+      ]
+    }
+  },
+  {
+    id: 'off-03',
+    inspectionId: 'insp-off-903',
+    productName: 'Nature Fresh Sunflower Oil 1L Pouch',
+    manufacturerName: 'Sunstar Agro Ltd',
+    packageSidesCaptured: ['PDP', 'SIDE_PANEL'],
+    evidenceCount: 2,
+    localSize: '7.2 MB',
+    capturedAt: new Date(Date.now() - 3 * 3600000).toISOString(),
+    syncStatus: 'SYNCED',
+    hasConflict: false
+  }
+];
+
