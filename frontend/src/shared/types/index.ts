@@ -412,3 +412,19 @@ export interface ScanQualityMetrics {
   isCourtroomReady: boolean;
   coachingTips: string[];
 }
+
+// F13: Rule Applicability & Category-Aware Rule Display
+export interface ApplicableRule {
+  id: string;
+  ruleCode: string;
+  title: string;
+  category: string;
+  legalReference: string;
+  description: string;
+  isMandatory: boolean;
+  version: string;
+  effectiveDate: string;
+  penalClause?: string;
+  applicableCommodities?: string[];
+}
+

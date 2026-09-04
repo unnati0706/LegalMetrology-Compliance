@@ -26,7 +26,8 @@ import {
   WalkthroughStep,
   TimelineEvent,
   SmartReportNarrative,
-  ScanQualityMetrics
+  ScanQualityMetrics,
+  ApplicableRule
 } from '../types/index.js';
 
 // Initial Mock Seed Data for instant interactive fidelity and standalone testing
@@ -253,12 +254,222 @@ const mockNotes: InspectorNote[] = [
   }
 ];
 
+const mockApplicableRules: ApplicableRule[] = [
+  {
+    id: 'rule-01',
+    ruleCode: 'PCR-2011-R06-MRP',
+    title: 'Maximum Retail Price (MRP) Declaration',
+    category: 'General Pre-Packaged Commodities',
+    legalReference: 'Rule 6(1)(e) of Legal Metrology (Packaged Commodities) Rules, 2011',
+    description: 'The maximum retail price at which the commodity in packaged form may be sold to the consumer, inclusive of all taxes, with the Indian Rupee symbol.',
+    isMandatory: true,
+    version: 'PCR-2011-v2.0 (Amended 2022)',
+    effectiveDate: '2022-01-01',
+    penalClause: 'Section 36(1) of Legal Metrology Act, 2009 (Fine up to ₹25,000 for first offence)'
+  },
+  {
+    id: 'rule-02',
+    ruleCode: 'PCR-2011-R06-USP',
+    title: 'Unit Sale Price (USP) for Packages > 100g/ml',
+    category: 'General Pre-Packaged Commodities',
+    legalReference: 'Rule 6(1)(e) Second Proviso',
+    description: 'Unit sale price in rupees rounded off to the nearest two decimal places per g/ml for commodities exceeding 100g/ml.',
+    isMandatory: true,
+    version: 'PCR-2011-v2.0 (Amended 2022)',
+    effectiveDate: '2022-01-01',
+    penalClause: 'Section 36(1) of Legal Metrology Act, 2009'
+  },
+  {
+    id: 'rule-03',
+    ruleCode: 'PCR-2011-R06-NET-QTY',
+    title: 'Net Quantity in Standard SI Metric Units',
+    category: 'General Pre-Packaged Commodities',
+    legalReference: 'Rule 6(1)(h) read with Schedule II & Schedule V',
+    description: 'Net quantity shall be stated in units of mass (g, kg) or volume (ml, l) without misleading non-standard units.',
+    isMandatory: true,
+    version: 'PCR-2011-v2.0',
+    effectiveDate: '2011-04-01',
+    penalClause: 'Section 36(1) & Schedule V of LM Rules'
+  },
+  {
+    id: 'rule-04',
+    ruleCode: 'PCR-2011-R07-FONT-SIZE',
+    title: 'Minimum Numeral Font Height on Principal Display Panel (PDP)',
+    category: 'Principal Display Panel Requirements',
+    legalReference: 'Rule 7 & Table 1 of Legal Metrology Rules',
+    description: 'Height of numeral in net quantity declaration must meet minimum area-based threshold (min 4mm for 200g-1kg net weight).',
+    isMandatory: true,
+    version: 'PCR-2011-v2.0',
+    effectiveDate: '2011-04-01',
+    penalClause: 'Rule 32 Compounding Clause'
+  },
+  {
+    id: 'rule-05',
+    ruleCode: 'PCR-2011-R06-MFG-ADDRESS',
+    title: 'Manufacturer / Packer Name and Complete Postal Address',
+    category: 'Origin & Manufacturer Identity',
+    legalReference: 'Rule 6(1)(a) & Rule 6(1)(aa)',
+    description: 'Name and complete address of the manufacturer, or packer, or importer with PIN code and country of origin if imported.',
+    isMandatory: true,
+    version: 'PCR-2011-v2.0',
+    effectiveDate: '2011-04-01',
+    penalClause: 'Section 36(1) of LM Act'
+  },
+  {
+    id: 'rule-06',
+    ruleCode: 'PCR-2011-R06-CONSUMER-CARE',
+    title: 'Consumer Care Contact Details',
+    category: 'Consumer Grievance Redressal',
+    legalReference: 'Rule 6(1)(n)',
+    description: 'Name, address, telephone number, and email address of the designated grievance officer or consumer cell.',
+    isMandatory: true,
+    version: 'PCR-2011-v2.0',
+    effectiveDate: '2011-04-01',
+    penalClause: 'Section 36(1) of LM Act'
+  },
+  {
+    id: 'rule-07',
+    ruleCode: 'PCR-2011-R06-MFG-DATE',
+    title: 'Month and Year of Manufacture / Pre-packing',
+    category: 'Dates & Shelf-Life',
+    legalReference: 'Rule 6(1)(d)',
+    description: 'Month and year in which the commodity is manufactured or pre-packed clearly legible on the package.',
+    isMandatory: true,
+    version: 'PCR-2011-v2.0',
+    effectiveDate: '2011-04-01',
+    penalClause: 'Section 36(1) of LM Act'
+  }
+];
+
 // In-memory runtime state for mutations
 let inspectionsState = [...mockInspections];
 let checkResultsState = [...mockCheckResults];
+let declarationsState = [...mockDeclarations];
+let rulesState = [...mockApplicableRules];
 let notesState = [...mockNotes];
 
 export const apiClient = {
+  // F11: OCR / Extraction Processing Status
+  getProcessingStatus: async (inspectionId: string) => {
+    return {
+      inspectionId,
+      status: 'PROCESSING' as const,
+      stages: [
+        { id: 'stage-1', name: 'Multi-side Image Normalization', status: 'COMPLETED' as const, durationMs: 420 },
+        { id: 'stage-2', name: 'Glare & Blur Quality Assessment', status: 'COMPLETED' as const, durationMs: 650 },
+        { id: 'stage-3', name: 'Optical Character Recognition (OCR)', status: 'COMPLETED' as const, durationMs: 1280 },
+        { id: 'stage-4', name: 'Legal Metrology Field Extraction', status: 'COMPLETED' as const, durationMs: 910 },
+        { id: 'stage-5', name: 'Deterministic Rule Engine Validation', status: 'IN_PROGRESS' as const, durationMs: 340 }
+      ],
+      progressPercent: 90,
+      estimatedTimeRemainingSec: 1,
+      totalEvidenceCount: 4,
+      extractedFieldsCount: 6
+    };
+  },
+
+  retryProcessing: async (inspectionId: string) => {
+    return {
+      success: true,
+      message: 'Processing pipeline restarted successfully',
+      inspectionId
+    };
+  },
+
+  // F12: Extracted Declarations
+  getDeclarations: async (inspectionId: string) => {
+    return declarationsState.filter(d => d.inspectionId === inspectionId || inspectionId === 'insp-sample-01');
+  },
+
+  updateDeclaration: async (id: string, updates: Partial<Declaration>) => {
+    const dec = declarationsState.find(d => d.id === id);
+    if (!dec) {
+      // Return updated mock object if not found
+      return { id, field: 'updated', value: '', confidence: 1, status: 'CORRECTED' as const, ...updates };
+    }
+    Object.assign(dec, updates);
+    dec.status = 'CORRECTED';
+    return dec;
+  },
+
+  addDeclaration: async (inspectionId: string, declaration: Omit<Declaration, 'id' | 'inspectionId'>) => {
+    const newDec: Declaration = {
+      id: `dec-${Date.now()}`,
+      inspectionId,
+      ...declaration
+    };
+    declarationsState.push(newDec);
+    return newDec;
+  },
+
+  verifyAllDeclarations: async (inspectionId: string) => {
+    declarationsState = declarationsState.map(d => 
+      (d.inspectionId === inspectionId || inspectionId === 'insp-sample-01') ? { ...d, status: 'VERIFIED' } : d
+    );
+    return declarationsState.filter(d => d.inspectionId === inspectionId || inspectionId === 'insp-sample-01');
+  },
+
+  // F13: Rule Applicability & Category-Aware Rules
+  getApplicableRules: async (inspectionId?: string, category?: string) => {
+    let list = [...rulesState];
+    if (category && category !== 'ALL') {
+      list = list.filter(r => r.category.toLowerCase().includes(category.toLowerCase()));
+    }
+    return {
+      inspectionId: inspectionId || 'insp-sample-01',
+      category: category || 'General Pre-Packaged Commodities',
+      activeRuleVersion: 'PCR-2011-v2.0 (Amended 2022)',
+      gazetteNotification: 'G.S.R. 779(E) dated 2nd November 2021',
+      rules: list,
+      totalRules: list.length,
+      mandatoryCount: list.filter(r => r.isMandatory).length,
+      exemptionsCount: 0
+    };
+  },
+
+  // F14: Compliance Results & Violations
+  getComplianceResults: async (inspectionId: string) => {
+    const checks = checkResultsState.filter(c => c.inspectionId === inspectionId || inspectionId === 'insp-sample-01');
+    const passCount = checks.filter(c => c.status === 'PASS').length;
+    const flagCount = checks.filter(c => c.status === 'FLAG').length;
+    const reviewCount = checks.filter(c => c.status === 'MANUAL_REVIEW').length;
+    const overallScore = Math.round((passCount / (checks.length || 1)) * 100);
+
+    return {
+      inspectionId,
+      overallScore,
+      status: flagCount > 0 ? 'FLAGGED' : reviewCount > 0 ? 'MANUAL_REVIEW_REQUIRED' : 'COMPLIANT',
+      passedChecksCount: passCount,
+      flaggedChecksCount: flagCount,
+      manualReviewCount: reviewCount,
+      checks,
+      violations: checks.filter(c => c.status === 'FLAG').map(c => ({
+        id: `viol-${c.id}`,
+        inspectionId,
+        ruleCode: c.ruleCode,
+        legalReference: c.legalReference,
+        violationType: c.ruleTitle,
+        severity: 'MAJOR' as const,
+        explanation: c.explanation,
+        packageSide: c.packageSide,
+        status: 'OPEN' as const
+      }))
+    };
+  },
+
+  // F15: Evidence Highlighting & Bounding Boxes
+  getEvidenceAnnotations: async (inspectionId: string) => {
+    const evidence = mockEvidence.filter(e => e.inspectionId === inspectionId || inspectionId === 'insp-sample-01');
+    const declarations = declarationsState.filter(d => d.inspectionId === inspectionId || inspectionId === 'insp-sample-01');
+    const checks = checkResultsState.filter(c => c.inspectionId === inspectionId || inspectionId === 'insp-sample-01');
+    return {
+      inspectionId,
+      evidence,
+      declarations,
+      checks
+    };
+  },
+
   // Inspections (F25)
   getInspections: async (query?: { search?: string; status?: string; category?: string }) => {
     let list = [...inspectionsState];

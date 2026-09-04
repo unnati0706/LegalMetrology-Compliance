@@ -20,6 +20,13 @@ import { NewInspectionWizardPage } from './modules/f07/NewInspectionWizardPage.j
 import { ProductMetadataPage } from './modules/f08/ProductMetadataPage.js';
 import { ImageCapturePage } from './modules/f09/ImageCapturePage.js';
 
+// Core Inspection & Compliance Intelligence F11 - F15
+import { ProcessingPage } from './modules/f11/ProcessingPage.js';
+import { DeclarationsPage } from './modules/f12/DeclarationsPage.js';
+import { RulesPage } from './modules/f13/RulesPage.js';
+import { ResultsPage } from './modules/f14/ResultsPage.js';
+import { EvidencePage } from './modules/f15/EvidencePage.js';
+
 // Module Pages F21 - F25
 
 
@@ -77,6 +84,13 @@ export const App: React.FC = () => {
 
                     {/* F09 & F10: Multi-Side Image Capture & Quality Guidance */}
                     <Route path="/inspections/:id/capture" element={<ImageCapturePage />} />
+
+                    {/* F11 - F15: OCR Processing, Declarations, Rules, Compliance & Evidence */}
+                    <Route path="/inspections/:id/processing" element={<ProcessingPage />} />
+                    <Route path="/inspections/:id/declarations" element={<DeclarationsPage />} />
+                    <Route path="/inspections/:id/rules" element={<RulesPage />} />
+                    <Route path="/inspections/:id/results" element={<ResultsPage />} />
+                    <Route path="/inspections/:id/evidence" element={<EvidencePage />} />
 
                     {/* F02: Authentication & RBAC */}
                     <Route path="/login" element={<LoginPage />} />
