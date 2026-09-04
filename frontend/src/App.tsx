@@ -14,7 +14,14 @@ import { QueryClientProvider } from './modules/f03/QueryClientProvider.js';
 import { AppStoreProvider } from './modules/f04/AppStore.js';
 import { PwaRegistration } from './modules/f05/PwaRegistration.js';
 
+// Core Inspection Modules F06 - F10
+import { InspectorDashboardPage } from './modules/f06/InspectorDashboardPage.js';
+import { NewInspectionWizardPage } from './modules/f07/NewInspectionWizardPage.js';
+import { ProductMetadataPage } from './modules/f08/ProductMetadataPage.js';
+import { ImageCapturePage } from './modules/f09/ImageCapturePage.js';
+
 // Module Pages F21 - F25
+
 
 import { HeatmapPage } from './modules/f21/HeatmapPage.js';
 import { ManualReviewPage } from './modules/f22/ManualReviewPage.js';
@@ -61,12 +68,23 @@ export const App: React.FC = () => {
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
 
+                    {/* F06: Inspector Dashboard */}
+                    <Route path="/inspector/dashboard" element={<InspectorDashboardPage />} />
+
+                    {/* F07 & F08: New Inspection Wizard & Product Metadata */}
+                    <Route path="/inspections/new" element={<NewInspectionWizardPage />} />
+                    <Route path="/inspections/new/product" element={<ProductMetadataPage />} />
+
+                    {/* F09 & F10: Multi-Side Image Capture & Quality Guidance */}
+                    <Route path="/inspections/:id/capture" element={<ImageCapturePage />} />
+
                     {/* F02: Authentication & RBAC */}
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                     <Route path="/unauthorized" element={<UnauthorizedPage />} />
                     
                     {/* F25: Inspection History & Search */}
+
                     <Route path="/inspections" element={<InspectionsPage />} />
                     <Route path="/inspections/:id" element={<InspectionsPage />} />
 
