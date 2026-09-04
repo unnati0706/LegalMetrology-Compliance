@@ -18,6 +18,11 @@ const b07_routes_1 = __importDefault(require("./modules/b07/b07.routes"));
 const b08_routes_1 = __importDefault(require("./modules/b08/b08.routes"));
 const b09_routes_1 = __importDefault(require("./modules/b09/b09.routes"));
 const b10_routes_1 = __importDefault(require("./modules/b10/b10.routes"));
+const b11_routes_1 = __importDefault(require("./modules/b11/b11.routes"));
+const b12_routes_1 = __importDefault(require("./modules/b12/b12.routes"));
+const b13_routes_1 = __importDefault(require("./modules/b13/b13.routes"));
+const b14_routes_1 = __importDefault(require("./modules/b14/b14.routes"));
+const b15_routes_1 = __importDefault(require("./modules/b15/b15.routes"));
 const app = (0, express_1.default)();
 // Global Middlewares
 app.use(b03_middleware_1.helmetMiddleware);
@@ -45,6 +50,11 @@ app.use('/api/v1/b07', b07_routes_1.default);
 app.use('/api/v1/b08', b08_routes_1.default);
 app.use('/api/v1/b09', b09_routes_1.default);
 app.use('/api/v1/b10', b10_routes_1.default);
+app.use('/api/v1/b11', b11_routes_1.default);
+app.use('/api/v1/b12', b12_routes_1.default);
+app.use('/api/v1/b13', b13_routes_1.default);
+app.use('/api/v1/b14', b14_routes_1.default);
+app.use('/api/v1/b15', b15_routes_1.default);
 // Audit Logs Endpoint (Admin/Supervisor)
 app.get('/api/v1/audit-logs', (req, res) => {
     const entityType = req.query.entityType;
