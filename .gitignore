@@ -1,18 +1,26 @@
+# Dependencies
 node_modules/
-
 **/node_modules/
-dist/
-**/dist/
-.env
-**/.env
 
-dist/
-build/
+# Environment Variables
 .env
 .env.local
 .env.*.local
-coverage/
+**/.env
+**/.env.*
+
+# Build Outputs
+dist/
+**/dist/
+build/
+**/build/
+
+# Logs & Coverage
 *.log
+coverage/
+
+# OS / Editor Files
 .DS_Store
 Thumbs.db
-
+.vscode/
+.idea/
