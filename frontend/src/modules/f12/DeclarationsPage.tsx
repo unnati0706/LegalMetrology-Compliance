@@ -139,13 +139,13 @@ export const DeclarationsPage: React.FC = () => {
             onClick={() => navigate(`/inspections/${id}/evidence`)}
             className="btn btn-secondary"
           >
-            Inspect Bounding Boxes Canvas (F15)
+            Inspect Bounding Boxes Canvas
           </button>
           <button 
             onClick={() => navigate(`/inspections/${id}/rules`)}
             className="btn btn-primary"
           >
-            Check Applicable Rules (F13) →
+            Check Applicable Rules →
           </button>
         </div>
       </div>

@@ -75,7 +75,7 @@ export const EvidenceLockerPage: React.FC = () => {
           </button>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Archive color="var(--color-primary-light)" />
-            Evidence Locker & Asset Vault (F27)
+            Evidence Locker & Asset Vault
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
             Cryptographically sealed high-resolution image assets with SHA-256 integrity digests for judicial record.

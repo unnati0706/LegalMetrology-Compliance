@@ -90,7 +90,7 @@ export const FinalizePage: React.FC = () => {
           <ArrowLeft size={14} /> Back to Heatmap
         </button>
         <h1 style={{ fontSize: '1.75rem', color: 'var(--text-main)' }}>
-          Inspection Finalization & Disposition (F24)
+          Inspection Finalization & Disposition
         </h1>
         <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
           Locking examination record for <strong style={{ color: 'var(--text-main)' }}>{inspection.productName}</strong> ({inspection.category}).

@@ -69,7 +69,7 @@ export const ViolationAnalyticsPage: React.FC = () => {
           </button>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <BarChart3 color="var(--color-primary-light)" />
-            Violation Trends & Statutory Clause Distribution (F29)
+            Violation Trends & Statutory Clause Distribution
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
             Longitudinal violation patterns, non-compliance hotspot analysis, and clause severity analytics.

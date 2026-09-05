@@ -70,7 +70,7 @@ export const HeatmapPage: React.FC = () => {
             <ArrowLeft size={14} /> Back to Inspections
           </button>
           <h1 style={{ fontSize: '1.75rem', color: 'var(--text-main)' }}>
-            Compliance Heatmap (F21)
+            Compliance Heatmap
           </h1>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
             {data.inspection.productName} • {data.inspection.brand} • <span style={{ fontWeight: 600 }}>{data.inspection.category}</span>

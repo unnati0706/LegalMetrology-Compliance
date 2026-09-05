@@ -87,7 +87,7 @@ export const ViolationCard: React.FC<ViolationCardProps> = ({
             className="btn btn-primary"
             style={{ fontSize: '0.8rem', padding: '4px 10px' }}
           >
-            Inspect Evidence Region (F15) →
+            Inspect Evidence Region →
           </button>
         )}
       </div>

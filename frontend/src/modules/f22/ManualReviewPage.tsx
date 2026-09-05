@@ -69,7 +69,7 @@ export const ManualReviewPage: React.FC = () => {
             </button>
           )}
           <h1 style={{ fontSize: '1.75rem', color: 'var(--text-main)' }}>
-            Manual Review & Confidence Gate (F22)
+            Manual Review & Confidence Gate
           </h1>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
             Triaging OCR / vision extractions with confidence score &lt; 75% or ambiguous legal declarations.

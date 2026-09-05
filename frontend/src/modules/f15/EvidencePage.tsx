@@ -50,7 +50,7 @@ export const EvidencePage: React.FC = () => {
                 fontWeight: 600 
               }}
             >
-              F15 Visual Studio
+              Visual Studio
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -100,7 +100,7 @@ export const EvidencePage: React.FC = () => {
           onClick={() => navigate(`/inspections/${id}/results`)}
           className="btn btn-secondary"
         >
-          ← Back to Compliance Results (F14)
+          ← Back to Compliance Results
         </button>
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -108,13 +108,13 @@ export const EvidencePage: React.FC = () => {
             onClick={() => navigate(`/inspections/${id}/manual-review`)}
             className="btn btn-secondary"
           >
-            Go to Manual Review Queue (F22)
+            Go to Manual Review Queue
           </button>
           <button 
             onClick={() => navigate(`/inspections/${id}/finalize`)}
             className="btn btn-primary"
           >
-            Proceed to Finalize Inspection (F24) →
+            Proceed to Finalize Inspection →
           </button>
         </div>
       </div>

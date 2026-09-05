@@ -50,7 +50,7 @@ export const EntityConsumerCarePage: React.FC = () => {
               Entity Identity & Consumer Care Verification
             </h1>
             <span style={{ fontSize: '0.8rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary-700, #1d4ed8)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-              F18 Entity & Redressal
+              Entity & Redressal
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -60,7 +60,7 @@ export const EntityConsumerCarePage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button onClick={() => navigate(`/inspections/${id}/dates-readability`)} className="btn btn-primary">
-            Dates & Readability (F19) →
+            Dates & Readability →
           </button>
         </div>
       </div>
@@ -70,10 +70,10 @@ export const EntityConsumerCarePage: React.FC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
         <button onClick={() => navigate(`/inspections/${id}/mrp-quantity`)} className="btn btn-secondary">
-          ← Back to MRP & Net Quantity (F17)
+          ← Back to MRP & Net Quantity
         </button>
         <button onClick={() => navigate(`/inspections/${id}/dates-readability`)} className="btn btn-primary">
-          Proceed to Dates & Readability (F19) →
+          Proceed to Dates & Readability →
         </button>
       </div>
     </div>

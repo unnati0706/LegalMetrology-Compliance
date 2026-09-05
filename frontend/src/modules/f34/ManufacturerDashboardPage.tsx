@@ -50,7 +50,7 @@ export const ManufacturerDashboardPage: React.FC = () => {
       }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#a5b4fc', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-            <Building2 size={16} /> Manufacturer Pre-Compliance Portal (F34)
+            <Building2 size={16} /> Manufacturer Pre-Compliance Portal
           </div>
           <h2 style={{ fontSize: '1.6rem', fontWeight: 800, margin: '0.25rem 0', color: '#ffffff' }}>
             Priya Foods Ltd • Self-Compliance Command

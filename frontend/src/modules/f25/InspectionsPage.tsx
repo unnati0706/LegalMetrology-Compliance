@@ -43,7 +43,7 @@ export const InspectionsPage: React.FC = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <h1 style={{ fontSize: '1.75rem', color: 'var(--text-main)' }}>
-            Inspection History & Search (F25)
+            Inspection History & Search
           </h1>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
             Comprehensive repository of packaged commodity inspections, compliance trails, and evidence logs.

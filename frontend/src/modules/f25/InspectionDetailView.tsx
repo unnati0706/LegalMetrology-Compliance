@@ -59,28 +59,28 @@ export const InspectionDetailView: React.FC<InspectionDetailViewProps> = ({
           onClick={() => navigate(`/inspections/${inspection.id}/heatmap`)}
           className="btn btn-primary btn-sm"
         >
-          <Layers size={14} /> Open Compliance Heatmap (F21)
+          <Layers size={14} /> Open Compliance Heatmap
         </button>
 
         <button
           onClick={() => navigate(`/inspections/${inspection.id}/manual-review`)}
           className="btn btn-secondary btn-sm"
         >
-          <CheckCircle2 size={14} /> Confidence Gate (F22)
+          <CheckCircle2 size={14} /> Confidence Gate
         </button>
 
         <button
           onClick={() => navigate(`/inspections/${inspection.id}/notes`)}
           className="btn btn-secondary btn-sm"
         >
-          <FileText size={14} /> Inspector Notes (F23)
+          <FileText size={14} /> Inspector Notes
         </button>
 
         <button
           onClick={() => navigate(`/inspections/${inspection.id}/finalize`)}
           className="btn btn-secondary btn-sm"
         >
-          <Lock size={14} /> Finalize Disposition (F24)
+          <Lock size={14} /> Finalize Disposition
         </button>
       </div>
     </div>

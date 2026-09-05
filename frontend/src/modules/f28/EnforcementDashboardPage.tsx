@@ -46,7 +46,7 @@ export const EnforcementDashboardPage: React.FC = () => {
         <div>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Shield color="var(--color-primary-light)" />
-            Supervisor / Enforcement Dashboard (F28)
+            Supervisor / Enforcement Dashboard
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
             High-level executive metrics, statutory compliance velocity, and operational enforcement monitoring.

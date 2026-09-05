@@ -15,7 +15,7 @@ export const ReportVersionList: React.FC<ReportVersionListProps> = ({ reports, o
         <History size={40} color="var(--text-muted)" style={{ margin: '0 auto 1rem auto' }} />
         <h3>No generated reports found</h3>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-          Generate a statutory inspection report from Module F26 to populate the tamper-evident archive.
+          Generate a statutory inspection report to populate the tamper-evident archive.
         </p>
       </div>
     );

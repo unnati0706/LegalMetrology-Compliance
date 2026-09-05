@@ -49,7 +49,7 @@ export const DatesReadabilityPage: React.FC = () => {
               Dates, Placement & Font Size Readability
             </h1>
             <span style={{ fontSize: '0.8rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary-700, #1d4ed8)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-              F19 Optical & Dimension Metrics
+              Optical & Dimension Metrics
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -59,7 +59,7 @@ export const DatesReadabilityPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button onClick={() => navigate(`/inspections/${id}/explain`)} className="btn btn-primary">
-            Explain Findings & "Ask Why" (F20) →
+            Explain Findings & "Ask Why" →
           </button>
         </div>
       </div>
@@ -70,10 +70,10 @@ export const DatesReadabilityPage: React.FC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
         <button onClick={() => navigate(`/inspections/${id}/entity-care`)} className="btn btn-secondary">
-          ← Back to Entity & Consumer Care (F18)
+          ← Back to Entity & Consumer Care
         </button>
         <button onClick={() => navigate(`/inspections/${id}/explain`)} className="btn btn-primary">
-          Proceed to Explainable Findings (F20) →
+          Proceed to Explainable Findings →
         </button>
       </div>
     </div>

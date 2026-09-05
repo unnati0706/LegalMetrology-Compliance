@@ -89,7 +89,7 @@ export const ProductLibraryPage: React.FC = () => {
           </button>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Package color="var(--color-primary-light)" />
-            Manufacturer Product Library & Packaging Artwork (F35)
+            Manufacturer Product Library & Packaging Artwork
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
             Central repository of brand SKUs, packaging artwork revisions, and pre-compliance digital proofs.

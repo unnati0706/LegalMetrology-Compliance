@@ -99,7 +99,7 @@ export const ReportPage: React.FC = () => {
           </button>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <FileSpreadsheet color="var(--color-primary-light)" />
-            Report Generation & Export (F26)
+            Report Generation & Export
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
             Compile tamper-evident statutory compliance certificates, compounding notices, and audit payloads.

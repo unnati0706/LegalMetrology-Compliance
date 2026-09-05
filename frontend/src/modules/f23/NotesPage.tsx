@@ -58,7 +58,7 @@ export const NotesPage: React.FC = () => {
             </button>
           )}
           <h1 style={{ fontSize: '1.75rem', color: 'var(--text-main)' }}>
-            Inspector Notes & Finding Annotations (F23)
+            Inspector Notes & Finding Annotations
           </h1>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
             Chronological field log, legal annotations, and tagged rule observations for inspection <strong style={{ color: 'var(--text-main)' }}>{inspectionId}</strong>.

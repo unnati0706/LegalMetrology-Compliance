@@ -50,7 +50,7 @@ export const ResultsPage: React.FC = () => {
                 fontWeight: 600 
               }}
             >
-              F14 Results Engine
+              Results Engine
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -63,13 +63,13 @@ export const ResultsPage: React.FC = () => {
             onClick={() => navigate(`/inspections/${id}/evidence`)}
             className="btn btn-secondary"
           >
-            Inspect Evidence Highlighting (F15)
+            Inspect Evidence Highlighting
           </button>
           <button 
             onClick={() => navigate(`/inspections/${id}/manual-review`)}
             className="btn btn-primary"
           >
-            Review Queue (F22) →
+            Review Queue →
           </button>
         </div>
       </div>
@@ -124,7 +124,7 @@ export const ResultsPage: React.FC = () => {
           onClick={() => navigate(`/inspections/${id}/rules`)}
           className="btn btn-secondary"
         >
-          ← Back to Rules Matrix (F13)
+          ← Back to Rules Matrix
         </button>
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -132,13 +132,13 @@ export const ResultsPage: React.FC = () => {
             onClick={() => navigate(`/inspections/${id}/evidence`)}
             className="btn btn-secondary"
           >
-            View Evidence Highlighting (F15)
+            View Evidence Highlighting
           </button>
           <button 
             onClick={() => navigate(`/inspections/${id}/finalize`)}
             className="btn btn-primary"
           >
-            Finalize Inspection (F24) →
+            Finalize Inspection →
           </button>
         </div>
       </div>

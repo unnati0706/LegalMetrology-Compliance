@@ -90,7 +90,7 @@ export const RulesPage: React.FC = () => {
           onClick={() => navigate(`/inspections/${id}/declarations`)}
           className="btn btn-secondary"
         >
-          ← Back to Declarations (F12)
+          ← Back to Declarations
         </button>
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
@@ -98,7 +98,7 @@ export const RulesPage: React.FC = () => {
             onClick={() => navigate(`/inspections/${id}/results`)}
             className="btn btn-primary"
           >
-            Run Compliance Rule Engine (F14) →
+            Run Compliance Rule Engine →
           </button>
         </div>
       </div>

@@ -53,7 +53,7 @@ export const MRPQuantityValidationPage: React.FC = () => {
               MRP & Net Quantity Deep Validation
             </h1>
             <span style={{ fontSize: '0.8rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary-700, #1d4ed8)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-              F17 Price & Metric Engine
+              Price & Metric Engine
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -63,7 +63,7 @@ export const MRPQuantityValidationPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button onClick={() => navigate(`/inspections/${id}/entity-care`)} className="btn btn-primary">
-            Manufacturer & Consumer Care (F18) →
+            Manufacturer & Consumer Care →
           </button>
         </div>
       </div>
@@ -73,10 +73,10 @@ export const MRPQuantityValidationPage: React.FC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
         <button onClick={() => navigate(`/inspections/${id}/completeness`)} className="btn btn-secondary">
-          ← Back to Completeness Audit (F16)
+          ← Back to Completeness Audit
         </button>
         <button onClick={() => navigate(`/inspections/${id}/entity-care`)} className="btn btn-primary">
-          Proceed to Entity & Consumer Care (F18) →
+          Proceed to Entity & Consumer Care →
         </button>
       </div>
     </div>

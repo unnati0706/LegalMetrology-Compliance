@@ -68,7 +68,7 @@ export const ExplainableFindingsPage: React.FC = () => {
               Explainable Inspection Findings ("Ask Why?")
             </h1>
             <span style={{ fontSize: '0.8rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary-700, #1d4ed8)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-              F20 Explainability Studio
+              Explainability Studio
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -78,7 +78,7 @@ export const ExplainableFindingsPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button onClick={() => navigate(`/inspections/${id}/heatmap`)} className="btn btn-primary">
-            Compliance Heatmap (F21) →
+            Compliance Heatmap →
           </button>
         </div>
       </div>
@@ -95,10 +95,10 @@ export const ExplainableFindingsPage: React.FC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
         <button onClick={() => navigate(`/inspections/${id}/dates-readability`)} className="btn btn-secondary">
-          ← Back to Dates & Readability (F19)
+          ← Back to Dates & Readability
         </button>
         <button onClick={() => navigate(`/inspections/${id}/heatmap`)} className="btn btn-primary">
-          Proceed to Compliance Heatmap (F21) →
+          Proceed to Compliance Heatmap →
         </button>
       </div>
     </div>

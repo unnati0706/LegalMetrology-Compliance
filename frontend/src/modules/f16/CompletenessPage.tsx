@@ -90,7 +90,7 @@ export const CompletenessPage: React.FC = () => {
               Declaration Completeness & Format Audit
             </h1>
             <span style={{ fontSize: '0.8rem', backgroundColor: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary-700, #1d4ed8)', padding: '3px 8px', borderRadius: '6px', fontWeight: 600 }}>
-              F16 Completeness Engine
+              Completeness Engine
             </span>
           </div>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>
@@ -100,7 +100,7 @@ export const CompletenessPage: React.FC = () => {
 
         <div style={{ display: 'flex', gap: '0.75rem' }}>
           <button onClick={() => navigate(`/inspections/${id}/mrp-quantity`)} className="btn btn-primary">
-            Inspect MRP & Quantity (F17) →
+            Inspect MRP & Quantity →
           </button>
         </div>
       </div>
@@ -109,10 +109,10 @@ export const CompletenessPage: React.FC = () => {
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
         <button onClick={() => navigate(`/inspections/${id}/results`)} className="btn btn-secondary">
-          ← Back to Compliance Results (F14)
+          ← Back to Compliance Results
         </button>
         <button onClick={() => navigate(`/inspections/${id}/mrp-quantity`)} className="btn btn-primary">
-          Proceed to MRP & Net Quantity Details (F17) →
+          Proceed to MRP & Net Quantity Details →
         </button>
       </div>
     </div>
