@@ -669,7 +669,7 @@ export const apiClient = {
       inspectionId: file.inspectionId || 'insp-sample-01',
       fileName: file.fileName || 'evidence_capture.jpg',
       packageSide: file.packageSide || 'FRONT',
-      imageUrl: file.imageUrl || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+      imageUrl: file.imageUrl || 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60',
       qualityScore: file.qualityScore || 0.94,
       resolution: '3840x2160',
       fileSize: '3.4 MB',
@@ -683,10 +683,11 @@ export const apiClient = {
 
   // Supervisor / Enforcement Dashboard (F28)
   getKPISummary: async (): Promise<KPISummary> => {
-    const total = inspectionsState.length + 42;
-    const compliant = inspectionsState.filter(i => i.overallDisposition === 'COMPLIANT').length + 31;
-    const flagged = inspectionsState.filter(i => i.status === 'FLAGGED' || i.violationsCount > 0).length + 8;
-    const manualReview = inspectionsState.filter(i => i.manualReviewCount > 0).length + 3;
+    const compliant = inspectionsState.filter(i => i.overallDisposition === 'COMPLIANT').length + 28;
+    const flagged = inspectionsState.filter(i => i.status === 'FLAGGED' || i.overallDisposition === 'NON_COMPLIANT').length + 8;
+    const manualReview = inspectionsState.filter(i => i.status === 'MANUAL_REVIEW_REQUIRED' || i.overallDisposition === 'REQUIRES_REINSPECTION').length + 4;
+    const inProgress = 2;
+    const total = compliant + flagged + manualReview + inProgress;
 
     return {
       totalInspections: total,
@@ -695,7 +696,7 @@ export const apiClient = {
       manualReviewCount: manualReview,
       complianceRate: Math.round((compliant / total) * 100),
       avgResolutionTimeHours: 1.8,
-      period: 'Last 30 Days (National Enforcement Zone)',
+      period: 'Last 30 Days (National Enforcement Zone - Seed Dataset)',
     };
   },
 
@@ -868,7 +869,7 @@ export const apiClient = {
       productId,
       version: versionData.version || newVersionNum,
       status: versionData.status || 'DRAFT',
-      imageUrl: versionData.imageUrl || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+      imageUrl: versionData.imageUrl || 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60',
       packageSide: versionData.packageSide || 'PDP',
       dimensions: versionData.dimensions || '210 x 297 mm (A4 Package)',
       dpi: versionData.dpi || 300,
@@ -929,19 +930,23 @@ export const apiClient = {
 
   // Before/After Comparison & Rescan (F37)
   getArtworkDiffComparison: async (productId: string, oldVer?: string, newVer?: string): Promise<ArtworkDiffResult> => {
+    const items = mockRemediationData[productId] || mockRemediationData['default'];
+    const resolvedCount = items.filter(i => i.isResolved).length;
+    const remainingCount = items.filter(i => !i.isResolved).length;
+
     return {
       productId,
       oldVersion: oldVer || 'v2.0',
       newVersion: newVer || 'v2.1',
-      oldScore: 68,
-      newScore: 96,
-      resolvedIssuesCount: 2,
-      remainingIssuesCount: 0,
+      oldScore: remainingCount > 0 ? 68 : 78,
+      newScore: remainingCount === 0 ? 100 : Math.round((resolvedCount / items.length) * 100),
+      resolvedIssuesCount: resolvedCount,
+      remainingIssuesCount: remainingCount,
       rescanDate: new Date().toISOString(),
       changes: [
         {
-          field: 'Unit Sale Price Font Area',
-          before: '₹0.28 / g (Font height 2.2mm)',
+          field: 'Unit Sale Price Font Height',
+          before: '₹0.28 / g (Estimated Text Height 2.1mm - Below Table 1 Min 4.0mm)',
           after: '₹0.28 / g (Font height 4.2mm - Table 1 Compliant)',
           status: 'RESOLVED',
           legalRule: 'Rule 6(1)(e) Second Proviso PCR 2011'
@@ -990,13 +995,25 @@ export const apiClient = {
 
   // Explainable Evidence Mode & Inspection Timeline (F39)
   getExplainableEvidenceWalkthrough: async (inspectionId: string): Promise<WalkthroughStep[]> => {
+    const insp = inspectionsState.find(i => i.id === inspectionId) || inspectionsState[0];
+    const ev = mockEvidence.filter(e => e.inspectionId === insp.id);
+    const pdpImg = ev.find(e => e.packageSide === 'PDP' || e.packageSide === 'FRONT')?.imageUrl || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=80';
+    const backImg = ev.find(e => e.packageSide === 'BACK')?.imageUrl || 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=80';
+
+    const mrpDec = mockDeclarations.find(d => d.inspectionId === insp.id && d.field === 'mrp');
+    const uspDec = mockDeclarations.find(d => d.inspectionId === insp.id && d.field === 'unit_sale_price');
+    const mrpText = mrpDec?.rawText || 'MRP Rs 140.00 (INCL OF ALL TAXES)';
+    const uspText = uspDec?.rawText || 'USP: Rs 0.28 per g (Estimated Text Height: 2.1mm)';
+
+    const isCompliant = insp.overallDisposition === 'COMPLIANT';
+
     return [
       {
         stepNumber: 1,
-        title: 'Step 1: Raw Field Capture & Cryptographic Hashing',
-        subtitle: 'High-resolution image captured by field inspector with SHA-256 seal.',
-        evidenceUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
-        extractedText: 'Raw visual tensor encoded at 4032x3024 300DPI.',
+        title: 'Step 1: High-Resolution Field Capture & Digital Hash Verification',
+        subtitle: `High-resolution image captured by field inspector for ${insp.productName} with SHA-256 seal.`,
+        evidenceUrl: pdpImg,
+        extractedText: 'High-resolution image capture & hash verification (4032x3024 300DPI).',
         ruleCode: 'SEC-EVIDENCE-INTEGRITY',
         verdict: 'PASS',
         explanation: 'Image timestamp, GPS coordinates, and camera EXIF verified tamper-evident.',
@@ -1006,9 +1023,9 @@ export const apiClient = {
         stepNumber: 2,
         title: 'Step 2: Optical Recognition & Bounding Box Localization',
         subtitle: 'Neural vision model locates Principal Display Panel (PDP) and Rule 6 declaration zones.',
-        evidenceUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
-        boundingBox: { ymin: 0.65, xmin: 0.15, ymax: 0.72, xmax: 0.55 },
-        extractedText: 'MRP Rs 140.00 (INCL OF ALL TAXES)',
+        evidenceUrl: backImg,
+        boundingBox: mrpDec?.boundingBox || { ymin: 0.65, xmin: 0.15, ymax: 0.72, xmax: 0.55 },
+        extractedText: mrpText,
         ruleCode: 'PCR-2011-R06-MRP',
         verdict: 'PASS',
         explanation: 'Bounding polygon detected with 96% confidence score in Back Panel lower quadrant.',
@@ -1017,25 +1034,33 @@ export const apiClient = {
       {
         stepNumber: 3,
         title: 'Step 3: Unit Sale Price Semantic Calculation & Proviso Check',
-        subtitle: 'Evaluating second proviso to Rule 6(1)(e) for packages above 100g/ml.',
-        evidenceUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
-        boundingBox: { ymin: 0.73, xmin: 0.15, ymax: 0.79, xmax: 0.50 },
-        extractedText: 'USP: Rs 0.28 per g (Font area measured: 2.1mm)',
+        subtitle: 'Evaluating second proviso to Rule 6(1)(e) for packaged commodities.',
+        evidenceUrl: backImg,
+        boundingBox: uspDec?.boundingBox || { ymin: 0.73, xmin: 0.15, ymax: 0.79, xmax: 0.50 },
+        extractedText: uspText,
         ruleCode: 'PCR-2011-R06-USP',
-        verdict: 'VIOLATION',
-        explanation: 'Statutory minimum font area for net quantity 500g is 4.0mm under Table 1. Detected font is 2.1mm.',
-        legalClause: 'Rule 6(1)(e) Second Proviso read with Rule 9 Table 1 PCR 2011'
+        verdict: isCompliant ? 'PASS' : 'VIOLATION',
+        explanation: isCompliant
+          ? 'Unit Sale Price font height meets Table 1 mandatory minimum requirements.'
+          : 'Statutory minimum font height for net quantity bracket is 4.0mm under Table 1. Estimated font height is 2.1mm.',
+        legalClause: 'Rule 6(1)(e) Second Proviso read with Rule 9 Table 1 PCR 2011 (Version PCR-2011-v2.0)'
       },
       {
         stepNumber: 4,
         title: 'Step 4: Statutory Legal Metrology Verdict & Citation',
-        subtitle: 'Compounding notice recommendation and statutory penalty determination.',
-        evidenceUrl: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
-        extractedText: 'Non-compliant under Rule 6(1)(e) & Rule 9 Table 1.',
-        ruleCode: 'LMA-2009-SEC36',
-        verdict: 'VIOLATION',
-        explanation: 'Penalty compounding range under Section 36(1): Up to ₹25,000 for first offence.',
-        legalClause: 'Section 36(1) of Legal Metrology Act, 2009 (Penalty for Non-Standard Packages)'
+        subtitle: 'Final disposition recommendation and statutory penalty determination.',
+        evidenceUrl: pdpImg,
+        extractedText: isCompliant
+          ? 'Full compliance verified under Rule 6(1) PCR 2011.'
+          : 'Non-compliant under Rule 6(1)(e) & Rule 9 Table 1.',
+        ruleCode: isCompliant ? 'PCR-2011-FULL-PASS' : 'LMA-2009-SEC36',
+        verdict: isCompliant ? 'PASS' : 'VIOLATION',
+        explanation: isCompliant
+          ? 'Certificate of Compliance approved for archival.'
+          : 'Penalty compounding range under Section 36(1): Up to ₹25,000 for first offence.',
+        legalClause: isCompliant
+          ? 'Rule 6(1) of Legal Metrology (Packaged Commodities) Rules, 2011'
+          : 'Section 36(1) of Legal Metrology Act, 2009 (Penalty for Non-Standard Packages)'
       }
     ];
   },
@@ -1102,23 +1127,49 @@ export const apiClient = {
 
   // Smart Report & Scan Quality Coach (F40)
   getSmartReportNarrative: async (inspectionId: string): Promise<SmartReportNarrative> => {
+    const insp = inspectionsState.find(i => i.id === inspectionId) || inspectionsState[0];
+    const checks = checkResultsState.filter(c => c.inspectionId === inspectionId);
+    const failedChecks = checks.filter(c => c.status === 'FLAG');
+    const passedCount = checks.filter(c => c.status === 'PASS').length;
+    const totalChecks = checks.length || 6;
+
+    const isCompliant = insp.overallDisposition === 'COMPLIANT' && failedChecks.length === 0;
+
     return {
       inspectionId,
-      productName: 'Priya Foods Premium Chilli Powder 500g',
-      executiveSummary: 'Statutory compliance inspection conducted under Legal Metrology Act, 2009. The subject packaged commodity satisfies 5 of 6 mandatory clauses under Rule 6(1) PCR 2011, but fails unit sale price typography specifications mandated under Rule 9 Table 1.',
-      compoundingPenaltyEstimate: '₹10,000 - ₹25,000 (Section 36(1) Compounding Ceiling)',
-      keyFindings: [
-        'MRP declaration is prominently displayed with statutory tax inclusion phrase.',
-        'Net quantity declaration (500g) conforms to maximum permissible variation limits under Second Schedule.',
-        'Unit Sale Price (₹0.28/g) font area is 2.1mm, violating minimum 4.0mm requirement for packages > 200g - 500g.',
-        'Manufacturer address and consumer care email verified active.'
-      ],
-      recommendedDirectives: [
-        'Issue statutory compounding rectification notice with 15-day compliance window.',
-        'Direct manufacturer to withdraw and over-sticker non-compliant inventory in trade channel.',
-        'Schedule priority re-inspection of corrected packaging batch within 30 days.'
-      ],
-      legalRiskAssessment: 'Medium Risk - Non-deceptive typographical defect rectifiable via standard compounding proceeding.',
+      productName: insp.productName,
+      executiveSummary: isCompliant
+        ? `Statutory compliance audit conducted under Legal Metrology Act, 2009 & PCR 2011 for ${insp.productName}. The subject packaged commodity satisfies all ${passedCount} mandatory clauses under Rule 6(1) PCR 2011 with full statutory compliance.`
+        : `Statutory compliance audit executed under Legal Metrology Act, 2009 for ${insp.productName}. Package satisfies ${passedCount} of ${totalChecks} mandatory clauses, but flagged ${failedChecks.length || 1} non-compliance issues requiring remediation under PCR 2011 Rule 6(1)(e).`,
+      compoundingPenaltyEstimate: isCompliant
+        ? '₹0 (Fully Statutory Compliant)'
+        : '₹10,000 - ₹25,000 (Section 36(1) Compounding Ceiling)',
+      keyFindings: isCompliant
+        ? [
+            `MRP declaration is prominently displayed with statutory tax inclusion phrase on ${insp.productName}.`,
+            'Net quantity declaration conforms to maximum permissible variation limits under Second Schedule.',
+            'Unit Sale Price declaration font height complies with Rule 6(1)(e) Table 1 specifications.',
+            'Manufacturer address and consumer care contact cell verified active.'
+          ]
+        : [
+            `Inspection for ${insp.productName} identified non-compliance under PCR 2011 Rule 6(1)(e).`,
+            `Unit Sale Price font height estimated at 2.1mm (Vision Assisted), violating minimum 4.0mm requirement for packages in this quantity bracket.`,
+            `MRP declaration displayed with inclusive tax phrase.`,
+            `Manufacturer address and consumer care contact cell verified.`
+          ],
+      recommendedDirectives: isCompliant
+        ? [
+            'Issue Certificate of Compliance for statutory records.',
+            'Archive inspection evidence bundle with SHA-256 integrity hash.'
+          ]
+        : [
+            'Issue statutory compounding rectification notice with 15-day compliance window.',
+            'Direct manufacturer to over-sticker or rectify packaging batch prior to commercial distribution.',
+            'Schedule follow-up audit of corrected artwork in pre-compliance portal.'
+          ],
+      legalRiskAssessment: isCompliant
+        ? 'Low Risk - Full Statutory Compliance Verified'
+        : 'Medium Risk - Non-deceptive typographical defect rectifiable via standard compounding proceeding.',
       generatedAt: new Date().toISOString()
     };
   },
@@ -1214,7 +1265,7 @@ const evidenceLockerState: EvidenceLockerFile[] = [
     inspectionId: 'insp-sample-01',
     fileName: 'priya_chilli_back_declarations.jpg',
     packageSide: 'BACK',
-    imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+    imageUrl: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60',
     qualityScore: 0.91,
     resolution: '4032x3024',
     fileSize: '3.8 MB',
@@ -1485,10 +1536,10 @@ const mockInspectNextQueue: InspectNextItem[] = [
     riskFactors: [
       { factor: 'Habitual Recidivism', impactScore: 38, direction: 'INCREASE', description: '4 previous compounding penalties in past 90 days' },
       { factor: 'Category Non-Compliance Baseline', impactScore: 24, direction: 'INCREASE', description: 'Packaged water category exhibits 41.2% regional defect rate' },
-      { factor: 'Missing Date Code Anomaly', impactScore: 18, direction: 'INCREASE', description: 'Batch code printer misalignment detected on field surveillance' },
+      { factor: 'Missing Date Code Anomaly', impactScore: 18, direction: 'INCREASE', description: 'Batch code printer misalignment detected on field inspection' },
       { factor: 'Inspector Verification Weight', impactScore: 9, direction: 'INCREASE', description: 'High probability of Rule 6(1)(e) MRP omission' }
     ],
-    suggestedAction: 'Dispatch Immediate On-Site Surprise Audit & Sample Seizure',
+    suggestedAction: 'Schedule Field Inspection & Physical Verification by Authorized Officer',
     priorityRank: 1
   },
   {
@@ -1525,7 +1576,7 @@ const mockInspectNextQueue: InspectNextItem[] = [
       { factor: 'Unit Sale Price Calculation', impactScore: 28, direction: 'INCREASE', description: 'USP decimal rounding inconsistency on 250g SKUs' },
       { factor: 'Established Manufacturer Mitigation', impactScore: -12, direction: 'DECREASE', description: 'Prompt compliance on past notice compounding' }
     ],
-    suggestedAction: 'Schedule Routine Surveillance Inspection in Next Fortnight',
+    suggestedAction: 'Schedule Routine Field Inspection in Next Fortnight',
     priorityRank: 3
   },
   {
@@ -1580,7 +1631,7 @@ const mockManufacturerProducts: ManufacturerProduct[] = [
         productId: 'prod-001',
         version: 'v2.0',
         status: 'APPROVED_FOR_PRINT',
-        imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+        imageUrl: 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60',
         packageSide: 'PDP',
         dimensions: '180 x 240 mm',
         dpi: 300,

@@ -1,7 +1,8 @@
 import React from 'react';
 import { EnforcementCase } from '../../shared/types/index.js';
 import { FollowUpStatusTag } from './FollowUpStatusTag.js';
-import { Briefcase, AlertCircle, Clock, Calendar, ArrowRight, User } from 'lucide-react';
+import { Briefcase, Clock, User, ArrowRight } from 'lucide-react';
+import { formatDateIST } from '../../shared/utils/dateUtils.js';
 
 interface CaseListProps {
   cases: EnforcementCase[];
@@ -81,7 +82,7 @@ export const CaseList: React.FC<CaseListProps> = ({
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                 <Clock size={12} />
-                <span>Due: {new Date(c.deadline).toLocaleDateString()}</span>
+                <span>Due: {formatDateIST(c.deadline)}</span>
               </div>
             </div>
 

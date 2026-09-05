@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { EvidenceLockerFile } from '../../shared/types/index.js';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils.js';
 import { Image as ImageIcon, Eye, HardDrive, Hash, CheckCircle, Tag, Maximize2, X, Download } from 'lucide-react';
 
 interface EvidenceLockerGridProps {
@@ -189,7 +190,7 @@ export const EvidenceLockerGrid: React.FC<EvidenceLockerGridProps> = ({ files })
                   Evidence Locker: {activePreview.fileName}
                 </h3>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  Captured: {new Date(activePreview.capturedAt).toLocaleString()} • {activePreview.resolution} • {activePreview.fileSize}
+                  Captured: {formatDateTimeIST(activePreview.capturedAt)} • {activePreview.resolution} • {activePreview.fileSize}
                 </div>
               </div>
               <button

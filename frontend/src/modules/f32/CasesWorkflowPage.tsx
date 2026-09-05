@@ -79,7 +79,7 @@ export const CasesWorkflowPage: React.FC = () => {
             Enforcement Cases, Follow-Ups & Assignment
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
-            Manage statutory notices, compounding proceedings, inspector field assignments, and prosecution escalations.
+            Legal enforcement case tracking console — manage statutory notices, compounding proceedings, hearing schedules, and officer case assignments.
           </p>
         </div>
 

@@ -39,7 +39,7 @@ export const FinalizeInspectionPanel: React.FC<FinalizeInspectionPanelProps> = (
       <div className="card">
         <h3 style={{ fontSize: '1.1rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <ShieldCheck size={18} color="var(--color-primary-500)" />
-          Pre-Flight Statutory Check Summary
+          Pre-Finalization Statutory Verification Check Summary
         </h3>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
@@ -96,7 +96,7 @@ export const FinalizeInspectionPanel: React.FC<FinalizeInspectionPanelProps> = (
           <textarea
             className="form-textarea"
             rows={3}
-            placeholder="Add concluding notes for official compliance record, compounding recommendation, or seizure memo..."
+            placeholder="Add concluding notes for official compliance record, compounding recommendation, or inspection memo..."
             value={remarks}
             onChange={(e) => setRemarks(e.target.value)}
             disabled={isSubmitting}

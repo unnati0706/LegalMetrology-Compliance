@@ -116,7 +116,7 @@ describe('B33 - Geographic Analysis Service', () => {
         .send({
           isHotspot: true,
           activeInspectorsCount: 9,
-          notes: 'Increased surveillance for festive season distribution',
+          notes: 'Increased field inspection monitoring for festive season distribution',
         });
 
       expect(res.status).toBe(200);

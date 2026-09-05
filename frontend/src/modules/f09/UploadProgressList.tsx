@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils';
 import { QualityScoreBadge } from '../f10/QualityScoreBadge';
 import { CheckCircle2, Trash2, Image as ImageIcon, Eye } from 'lucide-react';
 
@@ -54,7 +55,7 @@ export const UploadProgressList: React.FC<UploadProgressListProps> = ({
             <div>
               <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{photo.side}</div>
               <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                {photo.size} • {new Date(photo.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {photo.size} • {formatDateTimeIST(photo.timestamp)}
               </div>
             </div>
           </div>

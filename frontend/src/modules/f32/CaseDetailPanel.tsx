@@ -3,6 +3,7 @@ import { EnforcementCase, FollowUpStatus } from '../../shared/types/index.js';
 import { FollowUpStatusTag } from './FollowUpStatusTag.js';
 import { AssignmentSelector } from './AssignmentSelector.js';
 import { Briefcase, Calendar, ShieldCheck, FileText, Send, CheckCircle2, AlertOctagon, User } from 'lucide-react';
+import { formatDateIST } from '../../shared/utils/dateUtils.js';
 import { RoleGate } from '../../shared/auth/RoleGate.js';
 
 interface CaseDetailPanelProps {
@@ -74,7 +75,7 @@ export const CaseDetailPanel: React.FC<CaseDetailPanelProps> = ({
         </div>
         <div>
           <div style={{ color: 'var(--text-muted)' }}>Resolution Due Date</div>
-          <div style={{ fontWeight: 600, color: '#f87171' }}>{new Date(caseItem.deadline).toLocaleDateString()}</div>
+          <div style={{ fontWeight: 600, color: '#f87171' }}>{formatDateIST(caseItem.deadline)}</div>
         </div>
       </div>
 

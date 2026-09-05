@@ -1,5 +1,6 @@
 import React from 'react';
 import { Inspection, CheckResult, Declaration, ReportRecord } from '../../shared/types/index.js';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils.js';
 import { ShieldCheck, AlertTriangle, FileText, CheckCircle2, QrCode, Hash, Calendar, MapPin, User, Building } from 'lucide-react';
 
 interface ReportPreviewProps {
@@ -256,7 +257,7 @@ export const ReportPreview: React.FC<ReportPreviewProps> = ({
         <div style={{ textAlign: 'right' }}>
           <div style={{ fontWeight: 700, color: '#0f172a' }}>{inspection.inspectorName}</div>
           <div>Legal Metrology Officer (Inspector Grade I)</div>
-          <div>Generated: {new Date(report?.generatedAt || Date.now()).toLocaleString()}</div>
+          <div>Generated: {formatDateTimeIST(report?.generatedAt || Date.now())}</div>
         </div>
       </div>
     </div>

@@ -71,7 +71,7 @@ export const StatusDistributionChart: React.FC<StatusDistributionChartProps> = (
           <div style={{ width: '12px', height: '12px', backgroundColor: '#6366f1', borderRadius: '3px' }} />
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Under Review / Draft</div>
-            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{total - kpis.compliantCount - kpis.flaggedCount - kpis.manualReviewCount} cases</div>
+            <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{Math.max(0, total - kpis.compliantCount - kpis.flaggedCount - kpis.manualReviewCount)} cases</div>
           </div>
         </div>
       </div>

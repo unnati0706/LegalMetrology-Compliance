@@ -71,7 +71,7 @@ export const PatternsPage: React.FC = () => {
             Manufacturer Recidivism & Category Patterns
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
-            Identify habitual offenders, recurrent non-compliance patterns, and commodity sector risk profiles.
+            Identify habitual offenders, recurrent non-compliance patterns, and commodity sector risk profiles. <span style={{ color: '#fbbf24', fontWeight: 600 }}>(Recidivism Pattern Analytics — Prototype Demo Data)</span>
           </p>
         </div>
 

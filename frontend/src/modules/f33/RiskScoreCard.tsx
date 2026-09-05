@@ -28,7 +28,7 @@ export const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ item }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <Sparkles size={14} color="var(--color-primary-light)" />
             <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Predictive Enforcement Prioritization
+              Predictive Inspection Prioritization Support
             </span>
           </div>
           <h3 style={{ fontSize: '1.15rem', fontWeight: 700, margin: '0.25rem 0', color: 'var(--text-primary)' }}>
@@ -55,7 +55,7 @@ export const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ item }) => {
           <span style={{ fontSize: '1.4rem', fontWeight: 800, color: isHigh ? '#f87171' : isMed ? '#fbbf24' : '#4ade80' }}>
             {item.riskScore}
           </span>
-          <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', fontWeight: 700 }}>RISK</span>
+          <span style={{ fontSize: '0.55rem', color: 'var(--text-muted)', fontWeight: 700 }}>PRIORITY</span>
         </div>
       </div>
 
@@ -69,7 +69,7 @@ export const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ item }) => {
           color: '#a5b4fc',
           fontWeight: 600
         }}>
-          Model Confidence: {Math.round(item.confidence * 100)}%
+          Predictive Model Confidence (Demo Metric): {Math.round(item.confidence * 100)}%
         </span>
 
         <span style={{
@@ -98,6 +98,21 @@ export const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ item }) => {
           <span style={{ color: 'var(--text-muted)' }}>Action: </span>
           <strong style={{ color: 'var(--text-primary)' }}>{item.suggestedAction}</strong>
         </div>
+      </div>
+
+      <div style={{
+        padding: '0.5rem 0.75rem',
+        backgroundColor: 'rgba(245, 158, 11, 0.08)',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid rgba(245, 158, 11, 0.25)',
+        fontSize: '0.725rem',
+        color: '#d97706',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.4rem'
+      }}>
+        <AlertTriangle size={14} style={{ flexShrink: 0 }} />
+        <span>Decision-Support Note: Risk Score represents inspection priority ranking for officer planning. It does NOT imply confirmed non-compliance or autonomous penalty orders.</span>
       </div>
     </div>
   );

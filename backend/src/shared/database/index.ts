@@ -492,7 +492,7 @@ class DatabaseManager {
         factorBreakdown: [
           { factor: 'Net Quantity Discrepancy Severity', weight: 0.40, score: 85, contribution: 34.0, description: 'Temperature corrected density declarations frequently omitted' },
           { factor: 'Consumer Complaints Index', weight: 0.30, score: 70, contribution: 21.0, description: 'High volume of short-delivery reports' },
-          { factor: 'Regulatory Scrutiny Level', weight: 0.30, score: 76.67, contribution: 23.0, description: 'Mandatory surveillance category under PCR 2011 Second Schedule' }
+          { factor: 'Regulatory Scrutiny Level', weight: 0.30, score: 76.67, contribution: 23.0, description: 'Mandatory inspection monitoring category under PCR 2011 Second Schedule' }
         ],
         explanation: 'Critical risk category due to widespread omission of volume-to-mass conversion at 30°C and dual-unit declaration non-compliance.',
         confidence: 0.96,

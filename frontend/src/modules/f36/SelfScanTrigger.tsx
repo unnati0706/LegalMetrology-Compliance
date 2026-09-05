@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Play, Sparkles, RefreshCw, CheckCircle2, AlertCircle, Camera, RotateCcw, UploadCloud, X } from 'lucide-react';
+import { Play, Sparkles, RefreshCw, CheckCircle2, AlertCircle, Camera, RotateCcw, UploadCloud, X, Eye } from 'lucide-react';
 import axios from 'axios';
 import { ArtworkVersion } from '../../shared/types';
 import { BASE_URL } from '../../shared/api/client';
+import { formatDateIST } from '../../shared/utils/dateUtils.js';
 
 interface SelfScanTriggerProps {
   artworks: ArtworkVersion[];
@@ -28,6 +29,7 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isSimulatedMode, setIsSimulatedMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -41,6 +43,7 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
   const startCamera = async () => {
     setCameraError(null);
     setCapturedImage(null);
+    setIsSimulatedMode(false);
     try {
       if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -51,11 +54,13 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
           videoRef.current.srcObject = stream;
         }
       } else {
-        setCameraError('Camera access is not supported in this browser environment.');
+        setCameraError('Camera hardware access is unavailable in this environment.');
+        setIsSimulatedMode(true);
       }
     } catch (err: any) {
       console.error('[Camera] Access error:', err);
-      setCameraError('Unable to access live camera. Ensure camera permissions are allowed.');
+      setCameraError('Live web camera stream not active. Switching to Simulated Label Viewfinder (Demo Mode).');
+      setIsSimulatedMode(true);
     }
   };
 
@@ -68,8 +73,13 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
 
   const handleOpenScanModal = (e?: React.MouseEvent) => {
     if (e) e.preventDefault();
-    alert('Scan Started!');
+    if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+      window.alert('Scan Started!');
+    }
     setShowModal(true);
+    if (onRunScan) {
+      onRunScan(selectedId);
+    }
   };
 
   useEffect(() => {
@@ -82,6 +92,11 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
   }, [showModal]);
 
   const handleCapturePhoto = () => {
+    if (isSimulatedMode) {
+      setCapturedImage('https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60');
+      return;
+    }
+
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -107,6 +122,7 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
     setShowModal(false);
     setCapturedImage(null);
     setCameraError(null);
+    setIsSimulatedMode(false);
   };
 
   const handleSubmitCapturedImage = async () => {
@@ -183,7 +199,7 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
             <span style={{ color: 'var(--color-text-secondary)' }}>Specs: </span>
             <strong>{currentArtwork.dimensions}</strong> | {currentArtwork.dpi} DPI
             <div style={{ color: 'var(--color-text-secondary)', marginTop: '0.2rem', fontSize: '0.75rem' }}>
-              Uploaded: {new Date(currentArtwork.uploadedAt).toLocaleDateString()}
+              Uploaded: {formatDateIST(currentArtwork.uploadedAt)}
             </div>
           </div>
         )}
@@ -250,7 +266,9 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Camera size={22} color="var(--color-primary)" />
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Live Camera Label Capture</h3>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>
+                  {isSimulatedMode ? 'Simulated Label Camera Feed (Demo)' : 'Live Camera Label Capture'}
+                </h3>
               </div>
               <button
                 onClick={handleCloseModal}
@@ -260,12 +278,7 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
               </button>
             </div>
 
-            {cameraError ? (
-              <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', fontSize: '0.875rem', marginBottom: '1rem' }}>
-                <AlertCircle size={20} color="#dc2626" style={{ marginBottom: '0.25rem' }} />
-                <div>{cameraError}</div>
-              </div>
-            ) : capturedImage ? (
+            {capturedImage ? (
               <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                 <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>
                   Captured Label Photo Preview:
@@ -276,6 +289,36 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
                   style={{ width: '100%', maxHeight: '320px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--color-border)' }}
                 />
               </div>
+            ) : isSimulatedMode ? (
+              <div style={{ position: 'relative', background: '#0f172a', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img
+                  src="https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60"
+                  alt="Simulated Label Viewfinder"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }}
+                />
+                {/* Framing Box Guide */}
+                <div style={{
+                  position: 'absolute',
+                  top: '15%',
+                  left: '15%',
+                  right: '15%',
+                  bottom: '15%',
+                  border: '2px dashed #fbbf24',
+                  borderRadius: '8px',
+                  boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fbbf24',
+                  fontSize: '0.75rem',
+                  fontWeight: 600
+                }}>
+                  Align PDP Declarations Inside Frame
+                </div>
+                <div style={{ position: 'absolute', top: '10px', left: '10px', background: 'rgba(0,0,0,0.6)', padding: '0.2rem 0.6rem', borderRadius: '4px', color: '#fbbf24', fontSize: '0.7rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <Eye size={12} /> Demo Simulated Mode
+                </div>
+              </div>
             ) : (
               <div style={{ position: 'relative', background: '#000', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem', textAlign: 'center' }}>
                 <video
@@ -284,14 +327,29 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
                   playsInline
                   style={{ width: '100%', maxHeight: '320px', objectFit: 'cover', display: 'block' }}
                 />
-                <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, textAlign: 'center', color: '#fff', fontSize: '0.75rem', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
-                  Position Legal Metrology product label inside frame
+                <div style={{
+                  position: 'absolute',
+                  top: '15%',
+                  left: '15%',
+                  right: '15%',
+                  bottom: '15%',
+                  border: '2px dashed #3b82f6',
+                  borderRadius: '8px',
+                  boxShadow: '0 0 0 9999px rgba(0,0,0,0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  fontSize: '0.75rem',
+                  fontWeight: 600
+                }}>
+                  Align PDP Declarations Inside Frame
                 </div>
               </div>
             )}
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
-              {!capturedImage && !cameraError && (
+              {!capturedImage && (
                 <button
                   onClick={handleCapturePhoto}
                   className="btn btn-primary"

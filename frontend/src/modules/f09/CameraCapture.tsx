@@ -23,13 +23,13 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ currentSide, onCap
 
       const sampleImages: Record<string, string> = {
         'PDP (Front)': 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60',
-        'Back Panel': 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+        'Back Panel': 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60',
         'Top Cap / Lid': 'https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=800&auto=format&fit=crop&q=60',
       };
 
       onCapture({
         side: currentSide,
-        url: sampleImages[currentSide] || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&auto=format&fit=crop&q=60',
+        url: sampleImages[currentSide] || 'https://images.unsplash.com/photo-1599940824399-b87987ceb72a?w=800&auto=format&fit=crop&q=60',
         size: '3.4 MB',
         qualityScore: score
       });
@@ -63,6 +63,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ currentSide, onCap
         }}
       >
         <FramingOverlayGuide sideLabel={currentSide} />
+
+        <div style={{ position: 'absolute', top: '12px', left: '12px', zIndex: 10, backgroundColor: 'rgba(15, 23, 42, 0.75)', backdropFilter: 'blur(4px)', color: '#fbbf24', padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.35rem', border: '1px solid rgba(251, 191, 36, 0.3)' }}>
+          <ShieldCheck size={13} /> Simulated Viewfinder (Demo Stream)
+        </div>
 
         <img
           src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=800&auto=format&fit=crop&q=60"

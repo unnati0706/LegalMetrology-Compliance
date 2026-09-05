@@ -91,7 +91,7 @@ describe('Frontend Modules F31 - F35 Component Suite', () => {
         />
       );
 
-      expect(screen.getByText(/GeoSurveillance Layers/i)).toBeInTheDocument();
+      expect(screen.getByText(/Geographic Risk Layers/i)).toBeInTheDocument();
       const highRiskBtn = screen.getByRole('button', { name: /High Risk Zones \(Show\)/i });
       fireEvent.click(highRiskBtn);
       expect(handleToggleHighRisk).toHaveBeenCalledWith(true);
@@ -179,7 +179,6 @@ describe('Frontend Modules F31 - F35 Component Suite', () => {
           />
         </AuthProvider>
       );
-
       expect(screen.getByText(/Advance Enforcement Milestone/i)).toBeInTheDocument();
       const advanceBtn = screen.getByRole('button', { name: /Update Case Milestone/i });
       fireEvent.click(advanceBtn);
@@ -191,9 +190,9 @@ describe('Frontend Modules F31 - F35 Component Suite', () => {
   });
 
   /* ============================================================
-     F33: Risk Dashboard & Inspect-Next Queue Tests
+     F33: Inspect-Next Queue Tests
      ============================================================ */
-  describe('F33: Risk Dashboard & Inspect-Next Queue', () => {
+  describe('F33: Inspect-Next Queue', () => {
     const sampleQueueItem: InspectNextItem = {
       id: 'queue-01',
       productName: 'Royal Aqua Mineral Water 1L',
@@ -209,7 +208,7 @@ describe('Frontend Modules F31 - F35 Component Suite', () => {
         { factor: 'Habitual Recidivism', impactScore: 38, direction: 'INCREASE', description: '4 previous compounding penalties' },
         { factor: 'Category Non-Compliance Baseline', impactScore: 24, direction: 'INCREASE', description: 'High regional defect rate' }
       ],
-      suggestedAction: 'Dispatch Immediate On-Site Surprise Audit',
+      suggestedAction: 'Schedule Field Inspection & Physical Verification by Authorized Officer',
       priorityRank: 1,
     };
 
@@ -223,7 +222,7 @@ describe('Frontend Modules F31 - F35 Component Suite', () => {
 
       expect(screen.getByText('89')).toBeInTheDocument();
       expect(screen.getByText('Royal Aqua Mineral Water 1L')).toBeInTheDocument();
-      expect(screen.getByText(/Dispatch Immediate On-Site Surprise Audit/i)).toBeInTheDocument();
+      expect(screen.getByText(/Schedule Field Inspection/i)).toBeInTheDocument();
     });
 
     it('renders RiskFactorBreakdown with explainable AI impacts', () => {
@@ -249,7 +248,7 @@ describe('Frontend Modules F31 - F35 Component Suite', () => {
       );
 
       expect(screen.getByText('#1 PRIORITY')).toBeInTheDocument();
-      const dispatchBtn = screen.getByRole('button', { name: /Dispatch Audit/i });
+      const dispatchBtn = screen.getByRole('button', { name: /Assign Inspection/i });
       fireEvent.click(dispatchBtn);
       expect(handleDispatch).toHaveBeenCalledWith(sampleQueueItem);
     });

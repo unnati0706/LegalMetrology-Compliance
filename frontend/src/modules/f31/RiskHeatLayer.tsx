@@ -25,7 +25,7 @@ export const RiskHeatLayer: React.FC<RiskHeatLayerProps> = ({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 700, fontSize: '0.9rem' }}>
           <Layers size={16} color="var(--color-primary-light)" />
-          <span>GeoSurveillance Layers</span>
+          <span>Geographic Risk Layers</span>
         </div>
         <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>GIS Heat Engine</span>
       </div>

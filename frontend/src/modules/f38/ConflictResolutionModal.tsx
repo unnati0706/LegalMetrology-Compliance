@@ -1,5 +1,6 @@
 import React from 'react';
 import { OfflineQueueItem } from '../../shared/types';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils';
 import { AlertTriangle, X, Server, Smartphone, Check } from 'lucide-react';
 
 interface ConflictResolutionModalProps {
@@ -82,7 +83,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
               <Smartphone size={16} color="var(--color-primary)" /> Local Device Version
             </div>
             <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-              Captured: {new Date(item.capturedAt).toLocaleTimeString()}
+              Captured: {formatDateTimeIST(item.capturedAt)}
             </div>
             <div style={{ fontSize: '0.8125rem', marginTop: '0.5rem' }}>
               Evidence items: <strong>{item.evidenceCount} photos ({item.localSize})</strong>
@@ -97,7 +98,7 @@ export const ConflictResolutionModal: React.FC<ConflictResolutionModalProps> = (
               Updated by: {item.conflictDetails?.serverInspector || 'Central Node'}
             </div>
             <div style={{ fontSize: '0.8125rem', marginTop: '0.5rem' }}>
-              Server Timestamp: <strong>{item.conflictDetails?.serverVersionDate ? new Date(item.conflictDetails.serverVersionDate).toLocaleTimeString() : 'N/A'}</strong>
+              Server Timestamp: <strong>{item.conflictDetails?.serverVersionDate ? formatDateTimeIST(item.conflictDetails.serverVersionDate) : 'N/A'}</strong>
             </div>
           </div>
         </div>

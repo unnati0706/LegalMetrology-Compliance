@@ -92,7 +92,7 @@ export const ProductLibraryPage: React.FC = () => {
             Manufacturer Product Library & Packaging Artwork
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
-            Central repository of brand SKUs, packaging artwork revisions, and pre-compliance digital proofs.
+            Brand catalog & packaging asset repository — SKU metadata, package dimensions, artwork version history, pre-release PDF proofs, and diff scans.
           </p>
         </div>
 

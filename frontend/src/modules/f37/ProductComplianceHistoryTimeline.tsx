@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArtworkVersion } from '../../shared/types';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils';
 import { History, Calendar, CheckCircle2, AlertCircle, FileText, ArrowUpRight } from 'lucide-react';
 
 interface ProductComplianceHistoryTimelineProps {
@@ -58,7 +59,7 @@ export const ProductComplianceHistoryTimeline: React.FC<ProductComplianceHistory
                   </div>
                   <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <Calendar size={13} />
-                    <span>Uploaded on {new Date(art.uploadedAt).toLocaleString()} by {art.uploadedBy}</span>
+                    <span>Uploaded on {formatDateTimeIST(art.uploadedAt)} by {art.uploadedBy}</span>
                   </div>
                 </div>
 

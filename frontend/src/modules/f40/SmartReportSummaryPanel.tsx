@@ -1,5 +1,6 @@
 import React from 'react';
 import { SmartReportNarrative } from '../../shared/types';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils';
 import { FileText, ShieldAlert, CheckCircle2, AlertTriangle, ArrowRight, Gavel, Sparkles } from 'lucide-react';
 
 interface SmartReportSummaryPanelProps {
@@ -68,7 +69,7 @@ export const SmartReportSummaryPanel: React.FC<SmartReportSummaryPanelProps> = (
           <strong>Legal Risk Assessment:</strong> {narrative.legalRiskAssessment}
         </div>
         <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-          Generated: {new Date(narrative.generatedAt).toLocaleString()}
+          Generated: {formatDateTimeIST(narrative.generatedAt)}
         </div>
       </div>
     </div>

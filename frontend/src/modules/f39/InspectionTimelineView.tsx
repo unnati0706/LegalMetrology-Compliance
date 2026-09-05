@@ -1,5 +1,6 @@
 import React from 'react';
 import { TimelineEvent } from '../../shared/types';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils';
 import { ShieldCheck, User, Bot, Clock, Lock, Key, FileCheck } from 'lucide-react';
 
 interface InspectionTimelineViewProps {
@@ -86,7 +87,7 @@ export const InspectionTimelineView: React.FC<InspectionTimelineViewProps> = ({
                 <div style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   <span>Actor: <strong>{evt.actorName}</strong> ({evt.actorRole})</span>
                   <span>•</span>
-                  <span>{new Date(evt.timestamp).toLocaleString()}</span>
+                  <span>{formatDateTimeIST(evt.timestamp)}</span>
                 </div>
               </div>
             </div>

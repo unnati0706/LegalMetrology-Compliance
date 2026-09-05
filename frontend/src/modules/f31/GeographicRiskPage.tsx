@@ -55,10 +55,10 @@ export const GeographicRiskPage: React.FC = () => {
           </button>
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <Map color="var(--color-primary-light)" />
-            Geographic Risk Visualization & Surveillance Grid
+            Geographic Risk Visualization & Regional Compliance Grid
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
-            Geospatial surveillance heat map, regional compliance rates, and hotspot density across states and industrial clusters.
+            Geospatial compliance heatmap, regional compliance rates, and hotspot density across states and industrial clusters. <span style={{ color: '#fbbf24', fontWeight: 600 }}>(Prototype Jurisdiction Data)</span>
           </p>
         </div>
 

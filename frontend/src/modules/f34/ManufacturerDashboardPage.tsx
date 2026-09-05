@@ -56,7 +56,7 @@ export const ManufacturerDashboardPage: React.FC = () => {
             Priya Foods Ltd • Self-Compliance Command
           </h2>
           <p style={{ color: '#cbd5e1', fontSize: '0.875rem', margin: 0, maxWidth: '650px' }}>
-            Pre-screen packaging artwork against Legal Metrology Rules, 2011 before print runs to eliminate market seizure risk.
+            Manufacturer pre-print readiness dashboard — high-level compliance scorecards, critical packaging warnings, and active remediation action items under Legal Metrology Rules, 2011.
           </p>
         </div>
 

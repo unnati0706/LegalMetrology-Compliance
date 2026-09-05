@@ -46,7 +46,7 @@ export const InspectionsPage: React.FC = () => {
             Inspection History & Search
           </h1>
           <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-            Comprehensive repository of packaged commodity inspections, compliance trails, and evidence logs.
+            Individual package inspection log repository — search, filter, and audit optical extraction results, PDP evidence photos, and Rule 6 violation records for statutory commodities.
           </div>
         </div>
 

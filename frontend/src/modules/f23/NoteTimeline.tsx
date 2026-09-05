@@ -1,5 +1,6 @@
 import React from 'react';
 import { InspectorNote } from '../../shared/types/index.js';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils.js';
 import { MessageSquare, Clock, User, Tag } from 'lucide-react';
 
 interface NoteTimelineProps {
@@ -46,7 +47,7 @@ export const NoteTimeline: React.FC<NoteTimelineProps> = ({ notes }) => {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', color: 'var(--text-muted)', fontSize: '0.75rem' }}>
               <Clock size={13} />
-              <span>{new Date(note.timestamp).toLocaleString()}</span>
+              <span>{formatDateTimeIST(note.timestamp)}</span>
             </div>
           </div>
 

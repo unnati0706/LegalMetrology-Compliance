@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Inspection } from '../../shared/types/index.js';
+import { formatDateIST } from '../../shared/utils/dateUtils.js';
 import { Layers, CheckCircle2, FileText, Lock, X, ExternalLink, ShieldCheck, MapPin, Calendar } from 'lucide-react';
 
 interface InspectionDetailViewProps {
@@ -48,7 +49,7 @@ export const InspectionDetailView: React.FC<InspectionDetailViewProps> = ({
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Timestamp</div>
           <div style={{ fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
             <Calendar size={14} />
-            {new Date(inspection.createdAt).toLocaleDateString()}
+            {formatDateIST(inspection.createdAt)}
           </div>
         </div>
       </div>

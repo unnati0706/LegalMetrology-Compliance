@@ -16,13 +16,18 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode; defaultTheme?:
   defaultTheme = 'light'
 }) => {
   const [theme, setTheme] = useState<ThemeMode>(() => {
-    return (localStorage.getItem('doca_theme') as ThemeMode) || defaultTheme;
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return (window.localStorage.getItem('doca_theme') as ThemeMode) || defaultTheme;
+    }
+    return defaultTheme;
   });
 
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
-    localStorage.setItem('doca_theme', theme);
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('doca_theme', theme);
+    }
 
     if (theme === 'system') {
       const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

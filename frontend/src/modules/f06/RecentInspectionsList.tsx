@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Inspection } from '../../shared/types';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils';
 import { CheckCircle2, AlertTriangle, Clock, ArrowRight } from 'lucide-react';
 
 interface RecentInspectionsListProps {
@@ -57,7 +58,7 @@ export const RecentInspectionsList: React.FC<RecentInspectionsListProps> = ({ in
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               {getDispositionBadge(item.overallDisposition, item.violationsCount)}
               <span style={{ fontSize: '0.75rem', color: 'var(--color-text-secondary)' }}>
-                {item.createdAt ? new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently'}
+                {formatDateTimeIST(item.createdAt)}
               </span>
             </div>
           </Link>

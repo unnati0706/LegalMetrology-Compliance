@@ -114,7 +114,7 @@ export const InspectNextQueueList: React.FC<InspectNextQueueListProps> = ({
                   className="btn btn-primary"
                   style={{ fontSize: '0.75rem', padding: '0.3rem 0.65rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
                 >
-                  <Send size={12} /> Dispatch Audit
+                  <Send size={12} /> Assign Inspection
                 </button>
               </RoleGate>
             </div>

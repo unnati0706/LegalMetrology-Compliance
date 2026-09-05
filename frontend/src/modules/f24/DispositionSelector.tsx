@@ -64,37 +64,63 @@ export const DispositionSelector: React.FC<DispositionSelectorProps> = ({
           return (
             <div
               key={opt.type}
+              role="radio"
+              aria-checked={isSelected}
+              tabIndex={0}
               onClick={() => !disabled && onChange(opt.type)}
+              onKeyDown={(e) => {
+                if ((e.key === 'Enter' || e.key === ' ') && !disabled) {
+                  e.preventDefault();
+                  onChange(opt.type);
+                }
+              }}
               style={{
                 padding: '1.25rem',
                 borderRadius: 'var(--radius-lg)',
                 backgroundColor: isSelected ? opt.bg : 'var(--bg-card)',
-                border: isSelected ? `2px solid ${opt.color}` : '1px solid var(--border-light)',
+                border: isSelected ? `2.5px solid ${opt.color}` : '1px solid var(--border-light)',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 opacity: disabled ? 0.6 : 1,
-                boxShadow: isSelected ? 'var(--shadow-md)' : 'var(--shadow-sm)',
+                boxShadow: isSelected ? '0 4px 14px rgba(0, 0, 0, 0.12)' : 'var(--shadow-sm)',
                 transition: 'all var(--transition-fast)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.5rem',
+                gap: '0.6rem',
+                position: 'relative',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   {opt.icon}
-                  <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{opt.title}</span>
+                  <span style={{ fontWeight: isSelected ? 800 : 600, fontSize: '0.95rem' }}>{opt.title}</span>
                 </div>
-                <input
-                  type="radio"
-                  name="disposition"
-                  checked={isSelected}
-                  onChange={() => onChange(opt.type)}
-                  disabled={disabled}
-                  style={{ accentColor: opt.color, width: '18px', height: '18px' }}
-                />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  {isSelected && (
+                    <span style={{
+                      fontSize: '0.65rem',
+                      fontWeight: 800,
+                      textTransform: 'uppercase',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '4px',
+                      backgroundColor: opt.color,
+                      color: '#ffffff',
+                      letterSpacing: '0.05em'
+                    }}>
+                      SELECTED
+                    </span>
+                  )}
+                  <input
+                    type="radio"
+                    name="disposition"
+                    checked={isSelected}
+                    onChange={() => onChange(opt.type)}
+                    disabled={disabled}
+                    style={{ accentColor: opt.color, width: '18px', height: '18px', cursor: 'pointer' }}
+                  />
+                </div>
               </div>
 
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+              <p style={{ fontSize: '0.8rem', color: isSelected ? 'var(--text-primary)' : 'var(--text-muted)', lineHeight: 1.4, margin: 0 }}>
                 {opt.description}
               </p>
             </div>

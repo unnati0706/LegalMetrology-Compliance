@@ -26,7 +26,7 @@ export const ReadabilityFontSizePanel: React.FC<ReadabilityFontSizePanelProps> =
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
         <div style={{ padding: '1rem', borderRadius: '8px', backgroundColor: 'var(--surface-subtle, #f8fafc)', border: '1px solid var(--surface-border, #e2e8f0)' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Measured Numeral Height</span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Measured Numeral Height (Estimated Text Height - Vision Assisted)</span>
           <div style={{ fontSize: '1.4rem', fontWeight: 700, color: metrics.isHeightCompliant ? 'var(--success-600, #059669)' : 'var(--danger-600, #dc2626)', marginTop: '0.25rem' }}>
             {metrics.numeralHeightMm} mm
           </div>

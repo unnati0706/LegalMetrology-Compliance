@@ -19,8 +19,9 @@ export class RequestInterceptor {
       headers.set('Content-Type', 'application/json');
     }
 
-    // Attach Statutory JWT Authorization
-    const token = this.tokenGetter ? this.tokenGetter() : localStorage.getItem('doca_auth_token');
+    const token = this.tokenGetter 
+      ? this.tokenGetter() 
+      : (typeof window !== 'undefined' && window.localStorage ? window.localStorage.getItem('doca_auth_token') : null);
     if (token && !headers.has('Authorization')) {
       headers.set('Authorization', `Bearer ${token}`);
     }

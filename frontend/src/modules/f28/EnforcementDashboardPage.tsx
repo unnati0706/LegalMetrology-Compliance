@@ -7,6 +7,7 @@ import { StatusDistributionChart } from './StatusDistributionChart.js';
 import { RoleGate } from '../../shared/auth/RoleGate.js';
 import { Shield, RefreshCw, AlertCircle, ArrowUpRight, ShieldAlert, CheckCircle, Clock, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { formatDateIST } from '../../shared/utils/dateUtils.js';
 
 export const EnforcementDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,7 +50,7 @@ export const EnforcementDashboardPage: React.FC = () => {
             Supervisor / Enforcement Dashboard
           </h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', margin: '0.25rem 0 0 0' }}>
-            High-level executive metrics, statutory compliance velocity, and operational enforcement monitoring.
+            High-level executive metrics, statutory compliance velocity, and operational enforcement monitoring. <span style={{ color: '#fbbf24', fontWeight: 600 }}>(Demo Executive Analytics)</span>
           </p>
         </div>
 
@@ -158,7 +159,7 @@ export const EnforcementDashboardPage: React.FC = () => {
                       {insp.productName}
                     </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {insp.manufacturerName} • {insp.location || 'Jurisdiction Zone 1'} • {new Date(insp.updatedAt).toLocaleDateString()}
+                      {insp.manufacturerName} • {insp.location || 'Jurisdiction Zone 1'} • {formatDateIST(insp.updatedAt)}
                     </div>
                   </div>
 

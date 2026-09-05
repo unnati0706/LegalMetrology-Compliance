@@ -18,11 +18,20 @@ export const ArtworkUploadPanel: React.FC<ArtworkUploadPanelProps> = ({
   const [dimensions, setDimensions] = useState('180 x 240 mm');
   const [dpi, setDpi] = useState(300);
   const [changeSummary, setChangeSummary] = useState('');
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isUploading || disabled) return;
+    setValidationError(null);
+
+    const summaryText = changeSummary.trim();
+    if (summaryText.length > 0 && summaryText.length < 5) {
+      setValidationError('Remediation change summary must be at least 5 characters describing statutory adjustments.');
+      return;
+    }
+
     setIsUploading(true);
     try {
       await onUpload({
@@ -30,7 +39,7 @@ export const ArtworkUploadPanel: React.FC<ArtworkUploadPanelProps> = ({
         packageSide,
         dimensions,
         dpi,
-        changeSummary: changeSummary || 'Packaging artwork revision for pre-compliance screening.',
+        changeSummary: summaryText || 'Adjusted declaration font height to 4.0mm and updated manufacturer address as per PCR 2011 Table 1.',
         status: 'DRAFT',
       });
       setVersionTag('');
@@ -48,6 +57,12 @@ export const ArtworkUploadPanel: React.FC<ArtworkUploadPanelProps> = ({
       </div>
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        {validationError && (
+          <div style={{ padding: '0.5rem 0.75rem', backgroundColor: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#f87171', borderRadius: 'var(--radius-md)', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <AlertCircle size={14} />
+            <span>{validationError}</span>
+          </div>
+        )}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
           <div>
             <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.2rem' }}>

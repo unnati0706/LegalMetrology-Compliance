@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArtworkVersion } from '../../shared/types/index.js';
 import { History, ShieldCheck, AlertCircle, Clock, FileText, CheckCircle2 } from 'lucide-react';
+import { formatDateIST } from '../../shared/utils/dateUtils.js';
 
 interface ArtworkVersionListProps {
   artworks: ArtworkVersion[];
@@ -68,7 +69,7 @@ export const ArtworkVersionList: React.FC<ArtworkVersionListProps> = ({ artworks
                   {art.status.replace(/_/g, ' ')}
                 </span>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                  {new Date(art.uploadedAt).toLocaleDateString()}
+                  {formatDateIST(art.uploadedAt)}
                 </span>
               </div>
             </div>

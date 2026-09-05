@@ -115,7 +115,7 @@ export const ExplainableEvidenceWalkthrough: React.FC<ExplainableEvidenceWalkthr
           {/* Visual Evidence with Bounding Box representation */}
           <div>
             <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>
-              Cryptographically Verified Image Frame
+              Tamper-Evident Evidence Image Frame (Digital SHA-256 Hash Digest)
             </div>
             <div
               style={{

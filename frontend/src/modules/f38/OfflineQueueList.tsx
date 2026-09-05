@@ -1,5 +1,6 @@
 import React from 'react';
 import { OfflineQueueItem } from '../../shared/types';
+import { formatDateTimeIST } from '../../shared/utils/dateUtils';
 import { CheckCircle2, AlertTriangle, RefreshCw, HardDrive, Camera, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface OfflineQueueListProps {
@@ -87,7 +88,7 @@ export const OfflineQueueList: React.FC<OfflineQueueListProps> = ({
                 </div>
               </td>
               <td style={{ padding: '1rem', fontSize: '0.8125rem', color: 'var(--color-text-secondary)' }}>
-                {new Date(item.capturedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                {formatDateTimeIST(item.capturedAt)}
               </td>
               <td style={{ padding: '1rem' }}>
                 {getStatusBadge(item)}

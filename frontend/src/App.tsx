@@ -5,6 +5,7 @@ import { Layout } from './shared/components/Layout.js';
 
 // Foundation Modules F01 - F05
 import { DashboardPage } from './modules/f01/DashboardPage.js';
+import { RouteGuard } from './modules/f01/RouteGuard.js';
 import { LoginPage } from './modules/f02/LoginPage.js';
 import { ForgotPasswordPage } from './modules/f02/ForgotPasswordPage.js';
 import { UnauthorizedPage } from './modules/f02/UnauthorizedPage.js';
@@ -142,36 +143,36 @@ export const App: React.FC = () => {
                     <Route path="/reports" element={<ReportsHistoryPage />} />
 
                     {/* F28: Supervisor / Enforcement Dashboard */}
-                    <Route path="/enforcement/dashboard" element={<EnforcementDashboardPage />} />
+                    <Route path="/enforcement/dashboard" element={<RouteGuard allowedRoles={['SUPERVISOR', 'ADMIN']}><EnforcementDashboardPage /></RouteGuard>} />
 
                     {/* F29: Analytics: Violation Trends & Distribution */}
-                    <Route path="/enforcement/analytics" element={<ViolationAnalyticsPage />} />
+                    <Route path="/enforcement/analytics" element={<RouteGuard allowedRoles={['SUPERVISOR', 'ADMIN']}><ViolationAnalyticsPage /></RouteGuard>} />
 
                     {/* F30: Manufacturer/Category Pattern Analytics */}
-                    <Route path="/enforcement/patterns" element={<PatternsPage />} />
+                    <Route path="/enforcement/patterns" element={<RouteGuard allowedRoles={['SUPERVISOR', 'ADMIN']}><PatternsPage /></RouteGuard>} />
 
                     {/* F31: Geographic Risk Visualization */}
-                    <Route path="/enforcement/map" element={<GeographicRiskPage />} />
+                    <Route path="/enforcement/map" element={<RouteGuard allowedRoles={['SUPERVISOR', 'ADMIN']}><GeographicRiskPage /></RouteGuard>} />
 
                     {/* F32: Cases, Follow-Ups & Assignment Workflow */}
-                    <Route path="/enforcement/cases" element={<CasesWorkflowPage />} />
+                    <Route path="/enforcement/cases" element={<RouteGuard allowedRoles={['SUPERVISOR', 'ADMIN']}><CasesWorkflowPage /></RouteGuard>} />
 
                     {/* F33: Risk Dashboard & Inspect-Next Queue */}
-                    <Route path="/enforcement/inspect-next" element={<InspectNextPage />} />
+                    <Route path="/enforcement/inspect-next" element={<RouteGuard allowedRoles={['INSPECTOR', 'SUPERVISOR', 'ADMIN']}><InspectNextPage /></RouteGuard>} />
 
                     {/* F34: Manufacturer Dashboard */}
-                    <Route path="/manufacturer/dashboard" element={<ManufacturerDashboardPage />} />
+                    <Route path="/manufacturer/dashboard" element={<RouteGuard allowedRoles={['MANUFACTURER', 'ADMIN']}><ManufacturerDashboardPage /></RouteGuard>} />
 
                     {/* F35: Manufacturer Product Library & Artwork Management */}
-                    <Route path="/manufacturer/products" element={<ProductLibraryPage />} />
-                    <Route path="/manufacturer/products/:id" element={<ProductLibraryPage />} />
+                    <Route path="/manufacturer/products" element={<RouteGuard allowedRoles={['MANUFACTURER', 'ADMIN']}><ProductLibraryPage /></RouteGuard>} />
+                    <Route path="/manufacturer/products/:id" element={<RouteGuard allowedRoles={['MANUFACTURER', 'ADMIN']}><ProductLibraryPage /></RouteGuard>} />
 
                     {/* F36: Manufacturer Pre-Compliance Scan & Remediation Checklist */}
-                    <Route path="/manufacturer/products/:id/scan" element={<PreComplianceScanPage />} />
+                    <Route path="/manufacturer/products/:id/scan" element={<RouteGuard allowedRoles={['MANUFACTURER', 'ADMIN']}><PreComplianceScanPage /></RouteGuard>} />
 
                     {/* F37: Before/After Comparison & Rescan */}
-                    <Route path="/manufacturer/products/:id/rescan" element={<BeforeAfterRescanPage />} />
-                    <Route path="/manufacturer/products/:id/history" element={<ProductComplianceHistoryPage />} />
+                    <Route path="/manufacturer/products/:id/rescan" element={<RouteGuard allowedRoles={['MANUFACTURER', 'ADMIN']}><BeforeAfterRescanPage /></RouteGuard>} />
+                    <Route path="/manufacturer/products/:id/history" element={<RouteGuard allowedRoles={['MANUFACTURER', 'ADMIN']}><ProductComplianceHistoryPage /></RouteGuard>} />
 
                     {/* F38: Offline Inspection Queue & Sync Status */}
                     <Route path="/inspections/offline-queue" element={<OfflineQueuePage />} />
