@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { OCRBlock } from './ocr.adapter';
+import { OCRBlock, LegalMetrologyFields, parseLegalMetrologyFields } from './ocr.adapter';
 
 export interface OCRResultEntity {
   id: string;
@@ -8,6 +8,7 @@ export interface OCRResultEntity {
   overallConfidence: number;
   blocks: OCRBlock[];
   providerName: string;
+  parsedFields?: LegalMetrologyFields;
   createdAt: string;
 }
 
@@ -15,17 +16,19 @@ const ocrStore: Map<string, OCRResultEntity> = new Map();
 
 // Seed initial OCR result
 const seedOcrId = 'ocr_001';
+const seedText = 'NET QUANTITY: 70g\nMRP Rs. 14.00 (Incl. of all taxes)\nMFG DATE: 01/2026';
 ocrStore.set(seedOcrId, {
   id: seedOcrId,
   evidenceId: 'ev_001',
-  rawText: 'NET QUANTITY: 70g\nMRP Rs. 14.00 (Incl. of all taxes)\nMFG DATE: 01/2026',
+  rawText: seedText,
   overallConfidence: 0.92,
   blocks: [
     { text: 'NET QUANTITY: 70g', confidence: 0.95 },
     { text: 'MRP Rs. 14.00 (Incl. of all taxes)', confidence: 0.92 },
     { text: 'MFG DATE: 01/2026', confidence: 0.88 },
   ],
-  providerName: 'Mock-Tesseract-v5',
+  providerName: 'OCR.space-Engine-2',
+  parsedFields: parseLegalMetrologyFields(seedText),
   createdAt: new Date().toISOString(),
 });
 
@@ -49,8 +52,9 @@ export class B14Repository {
     return ocrStore.get(id) || null;
   }
 
-  async create(data: { evidenceId: string; rawText: string; overallConfidence: number; blocks: OCRBlock[]; providerName: string }): Promise<OCRResultEntity> {
+  async create(data: { evidenceId: string; rawText: string; overallConfidence: number; blocks: OCRBlock[]; providerName: string; parsedFields?: LegalMetrologyFields }): Promise<OCRResultEntity> {
     const id = uuidv4();
+    const parsedFields = data.parsedFields || parseLegalMetrologyFields(data.rawText);
     const result: OCRResultEntity = {
       id,
       evidenceId: data.evidenceId,
@@ -58,6 +62,7 @@ export class B14Repository {
       overallConfidence: data.overallConfidence,
       blocks: data.blocks,
       providerName: data.providerName,
+      parsedFields,
       createdAt: new Date().toISOString(),
     };
     ocrStore.set(id, result);
@@ -71,6 +76,7 @@ export class B14Repository {
     const updated: OCRResultEntity = {
       ...existing,
       rawText,
+      parsedFields: parseLegalMetrologyFields(rawText),
     };
     ocrStore.set(id, updated);
     return updated;

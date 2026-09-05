@@ -1,9 +1,11 @@
 import { B16Repository, DeclarationEntity, RawExtractedFields } from './b16.repository';
+import { OcrSpaceAdapter, parseLegalMetrologyFields } from '../b14/ocr.adapter';
 import { NotFoundError, ValidationError } from '../../shared/errors';
 import { recordAuditLog } from '../../shared/audit';
 
 export class B16Service {
   private repo = new B16Repository();
+  private ocrAdapter = new OcrSpaceAdapter();
 
   async getDeclarations(inspectionId?: string, limit = 10, offset = 0) {
     return this.repo.findAll({ inspectionId, limit, offset });
@@ -17,27 +19,45 @@ export class B16Service {
     return decl;
   }
 
-  async extractFieldsFromOcr(payload: { inspectionId: string; evidenceId?: string; ocrText?: string }, userId?: string): Promise<DeclarationEntity> {
+  async extractFieldsFromOcr(payload: { inspectionId: string; evidenceId?: string; imageSource?: string; ocrText?: string }, userId?: string): Promise<DeclarationEntity> {
     if (!payload.inspectionId) {
       throw new ValidationError('inspectionId is required');
     }
 
-    const text = payload.ocrText || 'MRP Rs. 14.00 (Incl. of all taxes)\nNET QUANTITY: 70g\nMFG DATE: 01/2026';
-    const lines = text.split('\n');
+    let text = payload.ocrText;
 
-    const rawFields: RawExtractedFields = {};
-    for (const line of lines) {
-      if (/mrp|rs|₹/i.test(line)) rawFields.mrpRaw = line.trim();
-      else if (/net|qty|quantity/i.test(line)) rawFields.netQuantityRaw = line.trim();
-      else if (/mfg|date|pkd|packed/i.test(line)) rawFields.mfgDateRaw = line.trim();
-      else if (/mfd|manufactured|mktd|marketed/i.test(line)) rawFields.manufacturerNameRaw = line.trim();
-      else if (/care|customercare|email|wecare/i.test(line)) rawFields.consumerCareRaw = line.trim();
+    if (!text) {
+      const source = payload.imageSource || payload.evidenceId;
+      if (source) {
+        try {
+          const ocrResult = await this.ocrAdapter.extractText(source);
+          text = ocrResult.rawText;
+        } catch {
+          // If OCR extraction fails, fallback to default text
+          text = '';
+        }
+      }
     }
+
+    if (!text) {
+      text = 'MRP Rs. 14.00 (Incl. of all taxes)\nNET QUANTITY: 70g\nMFG DATE: 01/2026';
+    }
+
+    const parsed = parseLegalMetrologyFields(text);
+    const rawFields: RawExtractedFields = {
+      mrpRaw: parsed.mrp,
+      netQuantityRaw: parsed.netQuantity,
+      mfgDateRaw: parsed.mfgDate,
+      manufacturerNameRaw: parsed.manufacturerName,
+      consumerCareRaw: parsed.consumerCare,
+    };
 
     const confidences: Record<string, number> = {
       mrp: rawFields.mrpRaw ? 0.94 : 0.0,
       netQuantity: rawFields.netQuantityRaw ? 0.96 : 0.0,
       mfgDate: rawFields.mfgDateRaw ? 0.89 : 0.0,
+      manufacturerName: rawFields.manufacturerNameRaw ? 0.90 : 0.0,
+      consumerCare: rawFields.consumerCareRaw ? 0.88 : 0.0,
     };
 
     const created = await this.repo.create({

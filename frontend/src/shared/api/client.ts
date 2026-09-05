@@ -348,9 +348,38 @@ let declarationsState = [...mockDeclarations];
 let rulesState = [...mockApplicableRules];
 let notesState = [...mockNotes];
 
+export const BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL || 'http://localhost:5000/api/v1';
+
+export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<T | null> {
+  try {
+    const token = typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string> || {}),
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+    if (!res.ok) {
+      return null;
+    }
+    const json = await res.json();
+    return json.data !== undefined ? json.data : json;
+  } catch (err) {
+    console.warn(`[API] HTTP call failed for ${endpoint}, falling back to mock state:`, err);
+    return null;
+  }
+}
+
 export const apiClient = {
   // F11: OCR / Extraction Processing Status
   getProcessingStatus: async (inspectionId: string) => {
+    const remote = await fetchApi<any>(`/b11?inspectionId=${inspectionId}`);
+    if (remote) return remote;
     return {
       inspectionId,
       status: 'PROCESSING' as const,
@@ -369,6 +398,8 @@ export const apiClient = {
   },
 
   retryProcessing: async (inspectionId: string) => {
+    const remote = await fetchApi<any>(`/b11/retry`, { method: 'POST', body: JSON.stringify({ inspectionId }) });
+    if (remote) return remote;
     return {
       success: true,
       message: 'Processing pipeline restarted successfully',
@@ -378,13 +409,16 @@ export const apiClient = {
 
   // F12: Extracted Declarations
   getDeclarations: async (inspectionId: string) => {
+    const remote = await fetchApi<Declaration[]>(`/b12?inspectionId=${inspectionId}`);
+    if (remote && Array.isArray(remote)) return remote;
     return declarationsState.filter(d => d.inspectionId === inspectionId || inspectionId === 'insp-sample-01');
   },
 
   updateDeclaration: async (id: string, updates: Partial<Declaration>) => {
+    const remote = await fetchApi<Declaration>(`/b12/${id}`, { method: 'PATCH', body: JSON.stringify(updates) });
+    if (remote) return remote;
     const dec = declarationsState.find(d => d.id === id);
     if (!dec) {
-      // Return updated mock object if not found
       return { id, field: 'updated', value: '', confidence: 1, status: 'CORRECTED' as const, ...updates };
     }
     Object.assign(dec, updates);
@@ -393,6 +427,8 @@ export const apiClient = {
   },
 
   addDeclaration: async (inspectionId: string, declaration: Omit<Declaration, 'id' | 'inspectionId'>) => {
+    const remote = await fetchApi<Declaration>('/b12', { method: 'POST', body: JSON.stringify({ inspectionId, ...declaration }) });
+    if (remote) return remote;
     const newDec: Declaration = {
       id: `dec-${Date.now()}`,
       inspectionId,
@@ -852,20 +888,31 @@ export const apiClient = {
     score: number;
     status: 'COMPLIANT' | 'FLAGGED';
     remediations: RemediationItem[];
+    ocrResult?: any;
   }> => {
-    const product = mockManufacturerProducts.find(p => p.id === productId);
-    if (!product) throw new Error(`Product ${productId} not found`);
+    const remote = await fetchApi<any>('/b14', {
+      method: 'POST',
+      body: JSON.stringify({
+        evidenceId: artworkId || `EVID-${productId}`,
+        imageSource: artworkId || productId,
+      }),
+    });
 
     const items = mockRemediationData[productId] || mockRemediationData['default'];
     const hasFail = items.some(i => i.status === 'FAIL' && !i.isResolved);
-    const score = hasFail ? 78 : 98;
-    const status = hasFail ? 'FLAGGED' : 'COMPLIANT';
+    const score = remote?.overallConfidence
+      ? Math.round(remote.overallConfidence * 100)
+      : (hasFail ? 78 : 98);
+    const status = score >= 85 ? (hasFail ? 'FLAGGED' : 'COMPLIANT') : 'FLAGGED';
 
-    product.lastScanScore = score;
-    product.complianceStatus = status;
-    product.updatedAt = new Date().toISOString();
+    const product = mockManufacturerProducts.find(p => p.id === productId);
+    if (product) {
+      product.lastScanScore = score;
+      product.complianceStatus = status;
+      product.updatedAt = new Date().toISOString();
+    }
 
-    return { score, status, remediations: items };
+    return { score, status, remediations: items, ocrResult: remote };
   },
 
   getRemediationItems: async (productId: string): Promise<RemediationItem[]> => {

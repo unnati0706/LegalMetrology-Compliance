@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { Play, Sparkles, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, Sparkles, RefreshCw, CheckCircle2, AlertCircle, Camera, RotateCcw, UploadCloud, X } from 'lucide-react';
+import axios from 'axios';
 import { ArtworkVersion } from '../../shared/types';
+import { BASE_URL } from '../../shared/api/client';
 
 interface SelfScanTriggerProps {
   artworks: ArtworkVersion[];
@@ -22,10 +24,112 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
   const [selectedId, setSelectedId] = useState<string>(
     selectedArtworkId || (artworks[0]?.id || '')
   );
+  const [showModal, setShowModal] = useState(false);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const handleSelect = (id: string) => {
     setSelectedId(id);
     onSelectArtwork(id);
+  };
+
+  const startCamera = async () => {
+    setCameraError(null);
+    setCapturedImage(null);
+    try {
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+        });
+        setMediaStream(stream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } else {
+        setCameraError('Camera access is not supported in this browser environment.');
+      }
+    } catch (err: any) {
+      console.error('[Camera] Access error:', err);
+      setCameraError('Unable to access live camera. Ensure camera permissions are allowed.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      setMediaStream(null);
+    }
+  };
+
+  const handleOpenScanModal = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    alert('Scan Started!');
+    setShowModal(true);
+  };
+
+  useEffect(() => {
+    if (showModal && !capturedImage) {
+      startCamera();
+    }
+    return () => {
+      stopCamera();
+    };
+  }, [showModal]);
+
+  const handleCapturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+        setCapturedImage(dataUrl);
+        stopCamera();
+      }
+    }
+  };
+
+  const handleRetakePhoto = () => {
+    setCapturedImage(null);
+    startCamera();
+  };
+
+  const handleCloseModal = () => {
+    stopCamera();
+    setShowModal(false);
+    setCapturedImage(null);
+    setCameraError(null);
+  };
+
+  const handleSubmitCapturedImage = async () => {
+    if (!capturedImage) return;
+    setIsSubmitting(true);
+    try {
+      const activeOcrEndpoint = `${BASE_URL}/b14`;
+      console.log(`[OCR] Submitting camera capture to ${activeOcrEndpoint}...`);
+      const response = await axios.post(activeOcrEndpoint, {
+        evidenceId: selectedId || 'EVID-CAMERA-CAP',
+        imageSource: capturedImage,
+      });
+      console.log('[OCR] Live camera scan response received:', response.data);
+      handleCloseModal();
+      if (onRunScan) {
+        await onRunScan(selectedId);
+      }
+    } catch (err) {
+      console.error('[OCR] Live camera submission failed:', err);
+      alert('Failed to submit camera capture to backend OCR service. Check console for details.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const currentArtwork = artworks.find(a => a.id === selectedId) || artworks[0];
@@ -86,7 +190,7 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
 
         <div>
           <button
-            onClick={() => onRunScan(selectedId)}
+            onClick={handleOpenScanModal}
             disabled={isScanning}
             className="btn btn-primary"
             style={{
@@ -115,6 +219,132 @@ export const SelfScanTrigger: React.FC<SelfScanTriggerProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Hidden Canvas for Frame Capture */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+      {/* Live Camera Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.75)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: 'var(--color-surface, #ffffff)',
+            borderRadius: '12px',
+            width: '100%',
+            maxWidth: '560px',
+            padding: '1.5rem',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)',
+            position: 'relative'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Camera size={22} color="var(--color-primary)" />
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>Live Camera Label Capture</h3>
+              </div>
+              <button
+                onClick={handleCloseModal}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem', color: 'var(--color-text-secondary)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {cameraError ? (
+              <div style={{ padding: '1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', fontSize: '0.875rem', marginBottom: '1rem' }}>
+                <AlertCircle size={20} color="#dc2626" style={{ marginBottom: '0.25rem' }} />
+                <div>{cameraError}</div>
+              </div>
+            ) : capturedImage ? (
+              <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-text-secondary)', marginBottom: '0.5rem' }}>
+                  Captured Label Photo Preview:
+                </div>
+                <img
+                  src={capturedImage}
+                  alt="Captured Label"
+                  style={{ width: '100%', maxHeight: '320px', objectFit: 'contain', borderRadius: '8px', border: '1px solid var(--color-border)' }}
+                />
+              </div>
+            ) : (
+              <div style={{ position: 'relative', background: '#000', borderRadius: '8px', overflow: 'hidden', marginBottom: '1rem', textAlign: 'center' }}>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  style={{ width: '100%', maxHeight: '320px', objectFit: 'cover', display: 'block' }}
+                />
+                <div style={{ position: 'absolute', bottom: '10px', left: 0, right: 0, textAlign: 'center', color: '#fff', fontSize: '0.75rem', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
+                  Position Legal Metrology product label inside frame
+                </div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              {!capturedImage && !cameraError && (
+                <button
+                  onClick={handleCapturePhoto}
+                  className="btn btn-primary"
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}
+                >
+                  <Camera size={18} />
+                  Capture Photo
+                </button>
+              )}
+
+              {capturedImage && (
+                <>
+                  <button
+                    onClick={handleRetakePhoto}
+                    className="btn btn-outline"
+                    disabled={isSubmitting}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                  >
+                    <RotateCcw size={18} />
+                    Retake
+                  </button>
+                  <button
+                    onClick={handleSubmitCapturedImage}
+                    className="btn btn-primary"
+                    disabled={isSubmitting}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <RefreshCw size={18} className="spin" />
+                        Submitting OCR...
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud size={18} />
+                        Submit for OCR Scan
+                      </>
+                    )}
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={handleCloseModal}
+                className="btn btn-outline"
+                disabled={isSubmitting}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -49,6 +49,91 @@ export class MockStorageAdapter implements StorageAdapter {
   async deleteFile(_key: string) {}
 }
 
+export class OcrSpaceSharedAdapter implements OcrAdapter {
+  private apiUrl = 'https://api.ocr.space/parse/image';
+
+  async extractText(imageUrlOrBuffer: string | Buffer) {
+    const apiKey = process.env.OCR_SPACE_API_KEY;
+    if (!apiKey) {
+      throw new Error('OCR.space API key is missing. Please set OCR_SPACE_API_KEY in backend/.env');
+    }
+
+    let imageSource = '';
+    if (typeof imageUrlOrBuffer === 'string') {
+      imageSource = imageUrlOrBuffer;
+    } else if (Buffer.isBuffer(imageUrlOrBuffer)) {
+      imageSource = `data:image/png;base64,${imageUrlOrBuffer.toString('base64')}`;
+    }
+
+    const isUrl = /^https?:\/\//i.test(imageSource);
+    const isBase64 = /^data:image\//i.test(imageSource);
+
+    if (!isUrl && !isBase64) {
+      const mock = new MockOcrAdapter();
+      return mock.extractText(imageUrlOrBuffer);
+    }
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append('apikey', apiKey);
+      formData.append('language', 'eng');
+      formData.append('isOverlayRequired', 'true');
+      formData.append('OCREngine', '2');
+
+      if (isBase64) {
+        formData.append('base64Image', imageSource);
+      } else {
+        formData.append('url', imageSource);
+      }
+
+      const response = await fetch(this.apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error(`OCR.space API Key is invalid or unauthorized (HTTP ${response.status})`);
+        }
+        throw new Error(`OCR.space API HTTP error! Status: ${response.status} ${response.statusText}`);
+      }
+
+      const data = (await response.json()) as any;
+
+      if (data.IsErroredOnProcessing) {
+        const errMsg = Array.isArray(data.ErrorMessage)
+          ? data.ErrorMessage.join(', ')
+          : data.ErrorMessage || 'Processing error on OCR.space server';
+        throw new Error(`OCR.space API Error: ${errMsg}`);
+      }
+
+      if (!data.ParsedResults || data.ParsedResults.length === 0) {
+        throw new Error('OCR.space returned no parsed results.');
+      }
+
+      const result = data.ParsedResults[0];
+
+      if (result.FileParseExitCode !== 1) {
+        const detail = result.ErrorMessage || result.ErrorDetails || 'Failed to parse image';
+        throw new Error(`OCR.space Parsing Error (Code ${result.FileParseExitCode}): ${detail}`);
+      }
+
+      const rawText = result.ParsedText ? result.ParsedText.trim() : '';
+
+      return {
+        rawText,
+        fields: [],
+        averageConfidence: 0.90,
+      };
+    } catch (err: any) {
+      throw new Error(`OCR.space extraction failed: ${err.message}`);
+    }
+  }
+}
+
 export class MockOcrAdapter implements OcrAdapter {
   async extractText(_imageUrlOrBuffer: string | Buffer) {
     return {

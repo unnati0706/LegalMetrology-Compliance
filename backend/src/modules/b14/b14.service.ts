@@ -1,5 +1,5 @@
 import { B14Repository, OCRResultEntity } from './b14.repository';
-import { MockOCRAdapter, IOCRAdapter } from './ocr.adapter';
+import { OcrSpaceAdapter, MockOCRAdapter, IOCRAdapter } from './ocr.adapter';
 import { NotFoundError, ValidationError, AppError } from '../../shared/errors';
 import { recordAuditLog } from '../../shared/audit';
 
@@ -11,7 +11,7 @@ export class OcrProcessingFailedError extends AppError {
 
 export class B14Service {
   private repo = new B14Repository();
-  private ocrAdapter: IOCRAdapter = new MockOCRAdapter();
+  private ocrAdapter: IOCRAdapter = new OcrSpaceAdapter();
 
   async getOcrResults(evidenceId?: string, limit = 10, offset = 0) {
     return this.repo.findAll({ evidenceId, limit, offset });
@@ -38,6 +38,7 @@ export class B14Service {
         overallConfidence: ocrData.overallConfidence,
         blocks: ocrData.blocks,
         providerName: ocrData.providerName,
+        parsedFields: ocrData.parsedFields,
       });
 
       recordAuditLog({

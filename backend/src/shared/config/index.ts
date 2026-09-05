@@ -25,5 +25,6 @@ export const config = {
   ruleEngine: {
     defaultVersion: 'PCR-2011-v2.0',
     confidenceThreshold: 0.75,
-  }
+  },
+  ocrSpaceApiKey: process.env.OCR_SPACE_API_KEY || ''
 };

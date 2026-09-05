@@ -4,7 +4,7 @@ import { apiClient } from '../../shared/api/client';
 import { ManufacturerProduct, RemediationItem } from '../../shared/types';
 import { SelfScanTrigger } from './SelfScanTrigger';
 import { RemediationChecklist } from './RemediationChecklist';
-import { ArrowLeft, GitCompare, Package, CheckCircle2, AlertTriangle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, GitCompare, Package, CheckCircle2, AlertTriangle, ShieldCheck, AlertCircle } from 'lucide-react';
 
 export const PreComplianceScanPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +16,8 @@ export const PreComplianceScanPage: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [scanSuccess, setScanSuccess] = useState<string | null>(null);
+  const [scanError, setScanError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +42,8 @@ export const PreComplianceScanPage: React.FC = () => {
   const handleRunScan = async (artworkId: string) => {
     if (!product) return;
     setIsScanning(true);
+    setScanError(null);
+    setScanSuccess(null);
     try {
       const result = await apiClient.runPreComplianceScan(product.id, artworkId);
       setRemediations(result.remediations);
@@ -48,8 +52,11 @@ export const PreComplianceScanPage: React.FC = () => {
         complianceStatus: result.status,
         lastScanScore: result.score
       } : null);
+      setScanSuccess(`Pre-compliance scan completed! Score: ${result.score}% (${result.status})`);
     } catch (err: any) {
-      alert(`Scan failed: ${err.message}`);
+      const msg = err.message || 'Error executing OCR pre-compliance scan';
+      setScanError(`Scan failed: ${msg}`);
+      alert(`Scan failed: ${msg}`);
     } finally {
       setIsScanning(false);
     }
@@ -125,6 +132,21 @@ export const PreComplianceScanPage: React.FC = () => {
           </Link>
         </div>
       </div>
+
+      {/* Success / Error Banners */}
+      {scanSuccess && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.875rem 1rem', background: '#ecfdf5', border: '1px solid #a7f3d0', borderRadius: '8px', color: '#065f46', marginBottom: '1.25rem', fontSize: '0.9375rem', fontWeight: 500 }}>
+          <CheckCircle2 size={20} color="#059669" />
+          {scanSuccess}
+        </div>
+      )}
+
+      {scanError && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.875rem 1rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '8px', color: '#991b1b', marginBottom: '1.25rem', fontSize: '0.9375rem', fontWeight: 500 }}>
+          <AlertCircle size={20} color="#dc2626" />
+          {scanError}
+        </div>
+      )}
 
       {/* Trigger & Scan Selector */}
       <SelfScanTrigger
