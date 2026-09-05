@@ -25,7 +25,6 @@ interface NavItem {
   to: string;
   label: string;
   icon: React.ReactNode;
-  module: string;
   allowedRoles?: string[];
 }
 
@@ -33,24 +32,24 @@ export const SideNav: React.FC = () => {
   const { role } = useAuth();
 
   const navItems: NavItem[] = [
-    { to: '/dashboard', label: 'Overview Dashboard', icon: <LayoutDashboard size={18} />, module: 'F01' },
-    { to: '/inspections', label: 'Inspections & Search', icon: <Search size={18} />, module: 'F25' },
-    { to: '/heatmap', label: 'Compliance Heatmap', icon: <Layers size={18} />, module: 'F21' },
-    { to: '/manual-review', label: 'Manual Review Queue', icon: <CheckCircle2 size={18} />, module: 'F22' },
-    { to: '/notes', label: 'Inspector Notes', icon: <FileText size={18} />, module: 'F23' },
-    { to: '/finalize', label: 'Finalization & Sign-off', icon: <Lock size={18} />, module: 'F24' },
-    { to: '/reports', label: 'Report Vault & Export', icon: <FileSpreadsheet size={18} />, module: 'F26/27' },
-    { to: '/inspections/offline-queue', label: 'Offline Sync Queue', icon: <HardDriveDownload size={18} />, module: 'F38' },
-    { to: '/inspections/insp-sample-01/explainable-evidence', label: 'Explainable AI & Audit', icon: <Sparkles size={18} />, module: 'F39/40' },
-    { to: '/enforcement/dashboard', label: 'Enforcement KPIs', icon: <Shield size={18} />, module: 'F28', allowedRoles: ['SUPERVISOR', 'ADMIN'] },
-    { to: '/enforcement/analytics', label: 'Violation Analytics', icon: <BarChart3 size={18} />, module: 'F29', allowedRoles: ['SUPERVISOR', 'ADMIN'] },
-    { to: '/enforcement/patterns', label: 'Recidivism Patterns', icon: <Network size={18} />, module: 'F30', allowedRoles: ['SUPERVISOR', 'ADMIN'] },
-    { to: '/enforcement/map', label: 'Geographic Risk Map', icon: <Map size={18} />, module: 'F31', allowedRoles: ['SUPERVISOR', 'ADMIN'] },
-    { to: '/enforcement/cases', label: 'Cases & Assignments', icon: <Briefcase size={18} />, module: 'F32', allowedRoles: ['SUPERVISOR', 'ADMIN'] },
-    { to: '/enforcement/inspect-next', label: 'Inspect-Next Queue', icon: <Sparkles size={18} />, module: 'F33', allowedRoles: ['INSPECTOR', 'SUPERVISOR', 'ADMIN'] },
-    { to: '/manufacturer/dashboard', label: 'Manufacturer Portal', icon: <Building2 size={18} />, module: 'F34', allowedRoles: ['MANUFACTURER', 'ADMIN'] },
-    { to: '/manufacturer/products', label: 'Product & Artwork Library', icon: <Package size={18} />, module: 'F35', allowedRoles: ['MANUFACTURER', 'ADMIN'] },
-    { to: '/manufacturer/products/prod-001/scan', label: 'Pre-Compliance & Diff', icon: <ShieldCheck size={18} />, module: 'F36/37', allowedRoles: ['MANUFACTURER', 'ADMIN'] },
+    { to: '/dashboard', label: 'Overview Dashboard', icon: <LayoutDashboard size={18} /> },
+    { to: '/inspections', label: 'Inspections & Search', icon: <Search size={18} /> },
+    { to: '/heatmap', label: 'Compliance Heatmap', icon: <Layers size={18} /> },
+    { to: '/manual-review', label: 'Manual Review Queue', icon: <CheckCircle2 size={18} /> },
+    { to: '/notes', label: 'Inspector Notes', icon: <FileText size={18} /> },
+    { to: '/finalize', label: 'Finalization & Sign-off', icon: <Lock size={18} /> },
+    { to: '/reports', label: 'Report Vault & Export', icon: <FileSpreadsheet size={18} /> },
+    { to: '/inspections/offline-queue', label: 'Offline Sync Queue', icon: <HardDriveDownload size={18} /> },
+    { to: '/inspections/insp-sample-01/explainable-evidence', label: 'Explainable AI & Audit', icon: <Sparkles size={18} /> },
+    { to: '/enforcement/dashboard', label: 'Enforcement KPIs', icon: <Shield size={18} />, allowedRoles: ['SUPERVISOR', 'ADMIN'] },
+    { to: '/enforcement/analytics', label: 'Violation Analytics', icon: <BarChart3 size={18} />, allowedRoles: ['SUPERVISOR', 'ADMIN'] },
+    { to: '/enforcement/patterns', label: 'Recidivism Patterns', icon: <Network size={18} />, allowedRoles: ['SUPERVISOR', 'ADMIN'] },
+    { to: '/enforcement/map', label: 'Geographic Risk Map', icon: <Map size={18} />, allowedRoles: ['SUPERVISOR', 'ADMIN'] },
+    { to: '/enforcement/cases', label: 'Cases & Assignments', icon: <Briefcase size={18} />, allowedRoles: ['SUPERVISOR', 'ADMIN'] },
+    { to: '/enforcement/inspect-next', label: 'Inspect-Next Queue', icon: <Sparkles size={18} />, allowedRoles: ['INSPECTOR', 'SUPERVISOR', 'ADMIN'] },
+    { to: '/manufacturer/dashboard', label: 'Manufacturer Portal', icon: <Building2 size={18} />, allowedRoles: ['MANUFACTURER', 'ADMIN'] },
+    { to: '/manufacturer/products', label: 'Product & Artwork Library', icon: <Package size={18} />, allowedRoles: ['MANUFACTURER', 'ADMIN'] },
+    { to: '/manufacturer/products/prod-001/scan', label: 'Pre-Compliance & Diff', icon: <ShieldCheck size={18} />, allowedRoles: ['MANUFACTURER', 'ADMIN'] },
   ];
 
   const visibleItems = navItems.filter(item => {
@@ -84,7 +83,6 @@ export const SideNav: React.FC = () => {
             style={({ isActive }) => ({
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between',
               padding: '0.65rem 0.85rem',
               borderRadius: '8px',
               color: isActive ? '#ffffff' : '#94a3b8',
@@ -100,18 +98,6 @@ export const SideNav: React.FC = () => {
               {item.icon}
               <span>{item.label}</span>
             </div>
-            <span
-              style={{
-                fontSize: '0.65rem',
-                padding: '0.15rem 0.4rem',
-                borderRadius: '4px',
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                color: '#a5b4fc',
-                fontWeight: 700
-              }}
-            >
-              {item.module}
-            </span>
           </NavLink>
         ))}
       </nav>
