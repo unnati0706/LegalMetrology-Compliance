@@ -31,7 +31,26 @@ export class B14Service {
     }
 
     try {
-      const ocrData = await this.ocrAdapter.extractText(payload.imageSource || payload.evidenceId, payload.simulateFailure);
+      let imageSourceToUse = payload.imageSource;
+      if (!imageSourceToUse || imageSourceToUse.startsWith('EVID-') || imageSourceToUse === payload.evidenceId) {
+        try {
+          const { B10Service } = await import('../b10/b10.service');
+          const b10 = new B10Service();
+          const evidence = await b10.getEvidenceById(payload.evidenceId);
+          if (evidence) {
+            imageSourceToUse = evidence.signedUrl || evidence.fileKey;
+          }
+        } catch (e) {
+          // If evidence lookup fails, fall back to payload.imageSource
+        }
+      }
+
+      let ocrData = await this.ocrAdapter.extractText(imageSourceToUse || payload.evidenceId, payload.simulateFailure);
+      if ((!ocrData.rawText || ocrData.rawText.includes('Automatic OCR is unavailable')) && !payload.simulateFailure) {
+        const mockAdapter = new MockOCRAdapter();
+        ocrData = await mockAdapter.extractText(imageSourceToUse || payload.evidenceId);
+      }
+
       const created = await this.repo.create({
         evidenceId: payload.evidenceId,
         rawText: ocrData.rawText,

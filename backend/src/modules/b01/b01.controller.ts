@@ -20,7 +20,7 @@ export const getConfigs = async (req: Request, res: Response, next: NextFunction
 
 export const getConfigById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const config = await service.getConfigById(req.params.id);
+    const config = await service.getConfigById(req.params.id as string);
     res.json({ success: true, data: config });
   } catch (err) {
     next(err);
@@ -40,7 +40,7 @@ export const createConfig = async (req: Request, res: Response, next: NextFuncti
 export const updateConfig = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const config = await service.updateConfig(req.params.id, req.body, userId);
+    const config = await service.updateConfig(req.params.id as string, req.body, userId);
     res.json({ success: true, data: config });
   } catch (err) {
     next(err);

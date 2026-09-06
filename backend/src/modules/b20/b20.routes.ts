@@ -8,7 +8,7 @@ const router = Router();
 router.use(authenticateToken);
 
 router.get('/', requireRole(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), getApplicableRules);
-router.post('/', requireRole(['Administrator', 'Inspector', 'Supervisor']), evaluateApplicability);
+router.post('/', requireRole(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), evaluateApplicability);
 router.get('/:id', requireRole(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), getApplicabilityById);
 router.patch('/:id', requireRole(['Administrator']), evaluateApplicability);
 

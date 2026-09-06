@@ -18,7 +18,7 @@ export const getApplicableRules = async (req: Request, res: Response, next: Next
 
 export const getApplicabilityById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = await service.getApplicabilityById(req.params.id);
+    const data = await service.getApplicabilityById(req.params.id as string);
     res.json({ success: true, data });
   } catch (err) {
     next(err);

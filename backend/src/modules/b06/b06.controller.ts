@@ -23,7 +23,7 @@ export const getAuditLogs = async (req: Request, res: Response, next: NextFuncti
 
 export const getAuditLogById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const record = await service.getAuditLogById(req.params.id);
+    const record = await service.getAuditLogById(req.params.id as string);
     res.json({ success: true, data: record });
   } catch (err) {
     next(err);
@@ -42,7 +42,7 @@ export const createAuditLog = async (req: Request, res: Response, next: NextFunc
 
 export const updateAuditLog = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const record = await service.updateAuditLogReason(req.params.id, req.body.reason);
+    const record = await service.updateAuditLogReason(req.params.id as string, req.body.reason);
     res.json({ success: true, data: record });
   } catch (err) {
     next(err);

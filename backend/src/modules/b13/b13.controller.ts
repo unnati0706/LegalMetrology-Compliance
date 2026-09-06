@@ -22,7 +22,7 @@ export const getQualityResults = async (req: Request, res: Response, next: NextF
 
 export const getQualityById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const quality = await service.getQualityById(req.params.id);
+    const quality = await service.getQualityById(req.params.id as string);
     res.json({ success: true, data: quality });
   } catch (err) {
     next(err);
@@ -42,7 +42,7 @@ export const analyzeQuality = async (req: Request, res: Response, next: NextFunc
 export const updateQualityFlags = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const quality = await service.updateQualityFlags(req.params.id, req.body.flags, userId);
+    const quality = await service.updateQualityFlags(req.params.id as string, req.body.flags, userId);
     res.json({ success: true, data: quality });
   } catch (err) {
     next(err);

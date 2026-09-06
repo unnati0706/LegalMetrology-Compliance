@@ -22,7 +22,7 @@ export const getDeclarations = async (req: Request, res: Response, next: NextFun
 
 export const getDeclarationById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const decl = await service.getDeclarationById(req.params.id);
+    const decl = await service.getDeclarationById(req.params.id as string);
     res.json({ success: true, data: decl });
   } catch (err) {
     next(err);
@@ -43,7 +43,7 @@ export const evaluateConfidence = async (req: Request, res: Response, next: Next
 export const applyManualCorrection = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const decl = await service.applyManualCorrection(req.params.id, req.body, userId);
+    const decl = await service.applyManualCorrection(req.params.id as string, req.body, userId);
     res.json({ success: true, data: decl });
   } catch (err) {
     next(err);

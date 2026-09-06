@@ -24,7 +24,7 @@ export const getRules = async (req: Request, res: Response, next: NextFunction) 
 
 export const getRuleById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const rule = await service.getRuleById(req.params.id);
+    const rule = await service.getRuleById(req.params.id as string);
     res.json({ success: true, data: rule });
   } catch (err) {
     next(err);
@@ -44,7 +44,7 @@ export const createRule = async (req: Request, res: Response, next: NextFunction
 export const updateRule = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
-    const rule = await service.updateRuleVersion(req.params.id, req.body, user.role, user.id);
+    const rule = await service.updateRuleVersion(req.params.id as string, req.body, user.role, user.id);
     res.json({ success: true, data: rule });
   } catch (err) {
     next(err);

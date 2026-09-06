@@ -23,7 +23,7 @@ export const getDetections = async (req: Request, res: Response, next: NextFunct
 
 export const getDetectionById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await service.getDetectionById(req.params.id);
+    const result = await service.getDetectionById(req.params.id as string);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -43,7 +43,7 @@ export const processVision = async (req: Request, res: Response, next: NextFunct
 export const updateBoundingBox = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const result = await service.updateBoundingBox(req.params.id, req.body.boundingBox, userId);
+    const result = await service.updateBoundingBox(req.params.id as string, req.body.boundingBox, userId);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);

@@ -66,7 +66,7 @@ app.get('/', (_req, res) => {
 // Health Check Endpoints
 app.get('/health', (_req, res) => {
   res.json({
-    status: 'ok',
+    status: 'UP',
     service: 'Legal Metrology Compliance Backend (SIH26034)',
     timestamp: new Date().toISOString(),
   });

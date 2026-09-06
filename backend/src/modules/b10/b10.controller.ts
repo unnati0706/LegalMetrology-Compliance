@@ -22,7 +22,7 @@ export const getEvidenceList = async (req: Request, res: Response, next: NextFun
 
 export const getEvidenceById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const evidence = await service.getEvidenceById(req.params.id);
+    const evidence = await service.getEvidenceById(req.params.id as string);
     res.json({ success: true, data: evidence });
   } catch (err) {
     next(err);
@@ -42,7 +42,7 @@ export const uploadEvidence = async (req: Request, res: Response, next: NextFunc
 export const updateEvidence = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
-    const evidence = await service.updateEvidence(req.params.id, req.body, user.id);
+    const evidence = await service.updateEvidence(req.params.id as string, req.body, user.id);
     res.json({ success: true, data: evidence });
   } catch (err) {
     next(err);

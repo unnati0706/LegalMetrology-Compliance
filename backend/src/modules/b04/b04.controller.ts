@@ -40,7 +40,7 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction) 
 
 export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const user = await service.getUserById(req.params.id);
+    const user = await service.getUserById(req.params.id as string);
     res.json({ success: true, data: user });
   } catch (err) {
     next(err);
@@ -60,7 +60,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 export const updateUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const actingUserId = (req as any).user?.id;
-    const user = await service.updateUser(req.params.id, req.body, actingUserId);
+    const user = await service.updateUser(req.params.id as string, req.body, actingUserId);
     res.json({ success: true, data: user });
   } catch (err) {
     next(err);

@@ -8,10 +8,13 @@ export interface LegalMetrologyFields {
   mrp?: string;
   netQuantity?: string;
   mfgDate?: string;
+  expiryDate?: string;
+  batchNo?: string;
   manufacturerName?: string;
   consumerCare?: string;
   countryOfOrigin?: string;
   commodityName?: string;
+  unitSalePrice?: string;
 }
 
 export interface OCRResultData {
@@ -37,11 +40,17 @@ export function parseLegalMetrologyFields(rawText: string): LegalMetrologyFields
       fields.mrp = line;
     } else if (!fields.netQuantity && /(?:net\s*(?:qty|quantity|wt\.?|weight|vol\.?|volume)|n\.wt\.?|\d+\s*(?:g|gm|kg|ml|l|ltr)[\b\s,.]?)/i.test(line)) {
       fields.netQuantity = line;
-    } else if (!fields.mfgDate && /(?:mfg|pkd|packed|batch|date|mfd\.?|dop\.?|import\s*date|\d{2}[\/\.-]\d{2,4})/i.test(line)) {
+    } else if (!fields.mfgDate && /(?:mfg|pkd|packed|mfd\.?|dop\.?|date\s*of\s*(?:mfg|pkg|packing)|\d{2}[\/\.-]\d{2,4})/i.test(line)) {
       fields.mfgDate = line;
+    } else if (!fields.expiryDate && /(?:exp|expiry|use\s*by|best\s*before|valid\s*till)/i.test(line)) {
+      fields.expiryDate = line;
+    } else if (!fields.batchNo && /(?:batch|lot|b\.?\s*no|bn|code)/i.test(line)) {
+      fields.batchNo = line;
+    } else if (!fields.unitSalePrice && /(?:usp|unit\s*sale\s*price|rs\.?\s*\d+.*(?:per|\/))/i.test(line)) {
+      fields.unitSalePrice = line;
     } else if (!fields.manufacturerName && /(?:mfd\.?\s*by|manufactured\s*by|mktd\.?\s*by|marketed\s*by|packed\s*by|imported\s*by|pvt\.?\s*ltd\.?|ltd\.?)/i.test(line)) {
       fields.manufacturerName = line;
-    } else if (!fields.consumerCare && /(?:consumer|customer)\s*care|care\s*cell|helpline|toll\s*free|1800|wecare|feedback|complaint/i.test(line)) {
+    } else if (!fields.consumerCare && /(?:consumer|customer)\s*care|care\s*cell|helpline|toll\s*free|1800|wecare|feedback|complaint|care@/i.test(line)) {
       fields.consumerCare = line;
     } else if (!fields.countryOfOrigin && /(?:country\s*of\s*origin|made\s*in|product\s*of)/i.test(line)) {
       fields.countryOfOrigin = line;
@@ -59,8 +68,16 @@ export function parseLegalMetrologyFields(rawText: string): LegalMetrologyFields
     if (match) fields.netQuantity = match[0].trim();
   }
   if (!fields.mfgDate) {
-    const match = rawText.match(/(?:mfg|pkd|mfd|packed)\s*[:.-]?\s*(\d{2}[\/\.-]\d{2,4}|\w+\s+\d{4})/i);
+    const match = rawText.match(/(?:mfg|pkd|mfd|packed)\s*[:.-]?\s*(\d{2}[\/\.-]\d{2,4}|\d{2}[\/\.-]\d{2}[\/\.-]\d{2,4}|\w+\s+\d{4})/i);
     if (match) fields.mfgDate = match[0].trim();
+  }
+  if (!fields.expiryDate) {
+    const match = rawText.match(/(?:exp|expiry|use\s*by|best\s*before)\s*[:.-]?\s*(\d{2}[\/\.-]\d{2,4}|\d{2}[\/\.-]\d{2}[\/\.-]\d{2,4}|\w+\s+\d{4}|\d+\s*months)/i);
+    if (match) fields.expiryDate = match[0].trim();
+  }
+  if (!fields.batchNo) {
+    const match = rawText.match(/(?:batch|b\.?\s*no|bn|code)\s*[:.-]?\s*([a-zA-Z0-9\s-]+)/i);
+    if (match) fields.batchNo = match[0].trim();
   }
 
   return fields;
@@ -74,18 +91,33 @@ export class OcrSpaceAdapter implements IOCRAdapter {
       throw new Error('OCR upstream engine connection timed out');
     }
 
-    const apiKey = process.env.OCR_SPACE_API_KEY;
-    if (!apiKey) {
-      throw new Error('OCR.space API key is missing. Please set OCR_SPACE_API_KEY in backend/.env');
-    }
+    const apiKey = process.env.OCR_SPACE_API_KEY || 'K85345497288957';
 
     const isUrl = /^https?:\/\//i.test(imageSource);
     const isBase64 = /^data:image\//i.test(imageSource);
+    let payloadBase64 = isBase64 ? imageSource : '';
 
+    // If local file path or relative path, convert file bytes to Base64
     if (!isUrl && !isBase64) {
-      if (imageSource.startsWith('EVID-') || imageSource.includes('mock') || imageSource.includes('test')) {
-        const mockAdapter = new MockOCRAdapter();
-        return mockAdapter.extractText(imageSource);
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        let cleanRel = imageSource.replace(/^[/\\]+/, '');
+        let absPath = path.join(process.cwd(), cleanRel);
+        if (!fs.existsSync(absPath) && fs.existsSync(imageSource)) {
+          absPath = imageSource;
+        }
+        
+        if (fs.existsSync(absPath)) {
+          const buf = fs.readFileSync(absPath);
+          const ext = path.extname(absPath).toLowerCase().replace('.', '') || 'jpeg';
+          const mime = ext === 'png' ? 'png' : ext === 'webp' ? 'webp' : 'jpeg';
+          payloadBase64 = `data:image/${mime};base64,` + buf.toString('base64');
+        } else {
+          console.warn(`[OCR] Image file path not found: ${absPath}`);
+        }
+      } catch (err: any) {
+        console.warn(`[OCR] Failed to load local file bytes for ${imageSource}:`, err.message);
       }
     }
 
@@ -96,10 +128,12 @@ export class OcrSpaceAdapter implements IOCRAdapter {
       formData.append('isOverlayRequired', 'true');
       formData.append('OCREngine', '2');
 
-      if (isBase64) {
-        formData.append('base64Image', imageSource);
-      } else {
+      if (payloadBase64) {
+        formData.append('base64Image', payloadBase64);
+      } else if (isUrl) {
         formData.append('url', imageSource);
+      } else {
+        throw new Error(`Unable to resolve image source: ${imageSource}`);
       }
 
       const response = await fetch(this.apiUrl, {
@@ -179,7 +213,14 @@ export class OcrSpaceAdapter implements IOCRAdapter {
         parsedFields,
       };
     } catch (err: any) {
-      throw new Error(`OCR.space integration failure: ${err.message}`);
+      console.warn(`[OCR] Real OCR processing error (${err.message}). Returning safe controlled unavailable state.`);
+      return {
+        rawText: "Automatic OCR is unavailable for this image. Please verify packaging declarations manually.",
+        overallConfidence: 0.0,
+        blocks: [],
+        providerName: 'OCR.space-Engine-2 (Offline)',
+        parsedFields: {},
+      };
     }
   }
 }

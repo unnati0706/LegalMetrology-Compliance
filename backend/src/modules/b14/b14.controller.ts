@@ -22,7 +22,7 @@ export const getOcrResults = async (req: Request, res: Response, next: NextFunct
 
 export const getOcrById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const result = await service.getOcrById(req.params.id);
+    const result = await service.getOcrById(req.params.id as string);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);
@@ -42,7 +42,7 @@ export const processOcr = async (req: Request, res: Response, next: NextFunction
 export const updateOcrText = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const result = await service.updateOcrText(req.params.id, req.body.rawText, userId);
+    const result = await service.updateOcrText(req.params.id as string, req.body.rawText, userId);
     res.json({ success: true, data: result });
   } catch (err) {
     next(err);

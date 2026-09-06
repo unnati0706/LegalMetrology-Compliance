@@ -24,7 +24,7 @@ export const getInspections = async (req: Request, res: Response, next: NextFunc
 export const getInspectionById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
-    const inspection = await service.getInspectionById(req.params.id, user.role, user.id);
+    const inspection = await service.getInspectionById(req.params.id as string, user.role, user.id);
     res.json({ success: true, data: inspection });
   } catch (err) {
     next(err);
@@ -44,7 +44,7 @@ export const createInspection = async (req: Request, res: Response, next: NextFu
 export const updateInspection = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
-    const inspection = await service.updateInspection(req.params.id, req.body, user.role, user.id);
+    const inspection = await service.updateInspection(req.params.id as string, req.body, user.role, user.id);
     res.json({ success: true, data: inspection });
   } catch (err) {
     next(err);

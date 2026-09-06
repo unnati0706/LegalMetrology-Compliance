@@ -23,7 +23,7 @@ export const getMetadataList = async (req: Request, res: Response, next: NextFun
 
 export const getMetadataById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const metadata = await service.getMetadataById(req.params.id);
+    const metadata = await service.getMetadataById(req.params.id as string);
     res.json({ success: true, data: metadata });
   } catch (err) {
     next(err);
@@ -43,7 +43,7 @@ export const createMetadata = async (req: Request, res: Response, next: NextFunc
 export const updateMetadata = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const metadata = await service.updateMetadata(req.params.id, req.body, userId);
+    const metadata = await service.updateMetadata(req.params.id as string, req.body, userId);
     res.json({ success: true, data: metadata });
   } catch (err) {
     next(err);

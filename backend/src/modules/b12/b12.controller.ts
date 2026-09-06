@@ -27,7 +27,7 @@ export const queryLogs = async (req: Request, res: Response, next: NextFunction)
 
 export const getLogById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const log = await service.getLogById(req.params.id);
+    const log = await service.getLogById(req.params.id as string);
     res.json({ success: true, data: log });
   } catch (err) {
     next(err);
@@ -47,7 +47,7 @@ export const exportSnapshot = async (req: Request, res: Response, next: NextFunc
 export const annotateLog = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const log = await service.annotateLog(req.params.id, req.body.reason, userId);
+    const log = await service.annotateLog(req.params.id as string, req.body.reason, userId);
     res.json({ success: true, data: log });
   } catch (err) {
     next(err);

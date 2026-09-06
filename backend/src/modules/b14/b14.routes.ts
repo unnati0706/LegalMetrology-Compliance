@@ -8,7 +8,7 @@ const router = Router();
 router.use(authenticateToken);
 
 router.get('/', requireRole(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), getOcrResults);
-router.post('/', requireRole(['Administrator', 'Inspector', 'Supervisor']), processOcr);
+router.post('/', requireRole(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), processOcr);
 router.get('/:id', requireRole(['Administrator', 'Inspector', 'Supervisor', 'Manufacturer']), getOcrById);
 router.patch('/:id', requireRole(['Administrator', 'Inspector', 'Supervisor']), updateOcrText);
 

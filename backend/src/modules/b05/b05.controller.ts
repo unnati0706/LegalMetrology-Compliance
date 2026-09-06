@@ -14,7 +14,7 @@ export const getRoles = async (req: Request, res: Response, next: NextFunction) 
 
 export const getRoleById = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const role = await service.getRoleById(req.params.id);
+    const role = await service.getRoleById(req.params.id as string);
     res.json({ success: true, data: role });
   } catch (err) {
     next(err);
@@ -34,7 +34,7 @@ export const createRole = async (req: Request, res: Response, next: NextFunction
 export const updateRole = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const userId = (req as any).user?.id;
-    const role = await service.updateRole(req.params.id, req.body, userId);
+    const role = await service.updateRole(req.params.id as string, req.body, userId);
     res.json({ success: true, data: role });
   } catch (err) {
     next(err);

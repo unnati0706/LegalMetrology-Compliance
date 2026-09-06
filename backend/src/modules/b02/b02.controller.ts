@@ -14,7 +14,7 @@ export const getDatabaseInfo = async (req: Request, res: Response, next: NextFun
 
 export const getTableMeta = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const data = await service.getTableMeta(req.params.id);
+    const data = await service.getTableMeta(req.params.id as string);
     res.json({ success: true, data });
   } catch (err) {
     next(err);

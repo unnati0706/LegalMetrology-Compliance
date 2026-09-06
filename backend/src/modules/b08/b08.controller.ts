@@ -24,7 +24,7 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
 export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
-    const product = await service.getProductById(req.params.id, user.role, user.id);
+    const product = await service.getProductById(req.params.id as string, user.role, user.id);
     res.json({ success: true, data: product });
   } catch (err) {
     next(err);
@@ -41,10 +41,24 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+export const getSampleProducts = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const user = (req as any).user;
+    const result = await service.getProducts(user.role, user.id, undefined, 50, 0);
+    const samples = result.items.filter((p: any) => p.id.startsWith('sample_'));
+    res.json({
+      success: true,
+      data: samples,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = (req as any).user;
-    const product = await service.updateProduct(req.params.id, req.body, user.role, user.id);
+    const product = await service.updateProduct(req.params.id as string, req.body, user.role, user.id);
     res.json({ success: true, data: product });
   } catch (err) {
     next(err);
